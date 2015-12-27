@@ -1,6 +1,6 @@
 
 
-CONFIG(win32-msvc*){
+win32-msvc* {
 
 CONFIG(debug,debug|release){
 BUILD_PATH_  = $$PWD/msvc_outs/bind

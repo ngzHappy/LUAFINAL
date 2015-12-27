@@ -8,15 +8,16 @@ TEMPLATE = lib
 
 DEFINES += QLUACORE_LIBRARY
 
-SOURCES += QLuaCore.cpp
+SOURCES += QLuaCore.cpp \
+    QLuaCoreDetail.cpp
 
-HEADERS += $$PWD/QLuaCore.hpp
+HEADERS += $$PWD/QLuaCore.hpp \
+    QLuaCoreDetail.hpp
 HEADERS += $$PWD/qluacore_global.hpp
 
 include( $$PWD/LUASource/qlua.pri )
 include( $$PWD/../BuildPaths.pri )
 
-HEADERS += $$PWD/VirtualBase.hpp
 DESTDIR = $$BUILD_PATH_
 
 
