@@ -4,7 +4,7 @@
 
 const char testFile[]=u8R"==(
 t0=1
-t1={a=11,b=12,c=13,[0]=3.1}
+t1={a=11,b=12,c=13,[0]=3.1,test=99.5}
 )==";
 
 #include <QLuaCore.hpp>
@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
         configFile.write({ "t0" },"[==[ss");
         qDebug()<<configFile.read({ "t0" });
 
-        configFile.write({ "t1","a" },53);
+        configFile.write({ "t1","a" },1.0/3);
         qDebug()<<configFile.read({ "t1","a" });
 
         configFile.write({ "t1","m" },5);

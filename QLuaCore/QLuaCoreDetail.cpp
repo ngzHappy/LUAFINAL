@@ -1,6 +1,10 @@
 ﻿
 #include "QLuaCoreDetail.hpp"
 
+namespace {
+enum { FLOAT_PRECISION_=16 };
+}
+
 QLuaCoreDetail::QLuaCoreDetail(){
 
 }
@@ -235,7 +239,10 @@ inline void luaL_printTable( lua_State * L ,std::function<void(const std::string
         const auto i=v[0];if ((i>='0')&&(i<='9')) { return true; }
         return false;
     };
-    const auto to_string=[](const auto & i) { std::stringstream ss; ss<<i; std::string ans; ss>>ans; return std::move(ans); };
+    const auto to_string=[](const auto & i) { 
+        std::stringstream ss; ss.precision(FLOAT_PRECISION_);
+        ss<<i; std::string ans; ss>>ans; return std::move(ans);
+    };
 
     const auto oprint_key=[&print_,&to_string,&is_integer](const Data & v) {
         const int & type=v.type;
@@ -628,7 +635,7 @@ public:
             switch ( i.type()) {
                 case QVariant::ByteArray: lua_pushstring(L,i.toByteArray()) ; break;
                 case QVariant::String:lua_pushstring(L,i.toString().toUtf8()) ; break;
-                case QVariant::Double:lua_pushinteger(L, static_cast<lua_Integer>(i.toDouble()) ); break;
+                case QVariant::Double:lua_pushnumber(L, (i.toDouble()) ); break;
                 default: {
                     bool value_=false;
                     auto index_ = i.toLongLong(&value_);
@@ -683,7 +690,7 @@ public:
             switch (i.type()) {
                 case QVariant::ByteArray: lua_pushstring(L,i.toByteArray()); break;
                 case QVariant::String:lua_pushstring(L,i.toString().toUtf8()); break;
-                case QVariant::Double:lua_pushinteger(L,static_cast<lua_Integer>(i.toDouble())); break;
+                case QVariant::Double:lua_pushnumber(L,(i.toDouble())); break;
                 default: {
                     bool value_=false;
                     auto index_=i.toLongLong(&value_);
@@ -764,7 +771,7 @@ public:
             switch (i.type()) {
                 case QVariant::ByteArray: lua_pushstring(L,i.toByteArray()); break;
                 case QVariant::String:lua_pushstring(L,i.toString().toUtf8()); break;
-                case QVariant::Double:lua_pushinteger(L,static_cast<lua_Integer>(i.toDouble())); break;
+                case QVariant::Double:lua_pushnumber(L,(i.toDouble())); break;
                 default: {
                     bool value_=false;
                     auto index_=i.toLongLong(&value_);
@@ -802,7 +809,7 @@ public:
                     ofs<<tbName.constData()<<" = "<<lua_tointeger(L,-1)<<std::endl;
                 }
                 else {
-                    ofs.precision(32);
+                    ofs.precision(FLOAT_PRECISION_);
                     ofs<<tbName.constData()<<" = "<<lua_tonumber(L,-1)<<std::endl;
                 }
                 return true;
