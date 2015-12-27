@@ -11,5 +11,6 @@ ConFigFileTest.file = $$PWD/ConFigFileTest/ConFigFileTest.pro
 
 ConFigFileTest.depends += QLuaCore
 
-SUBDIRS += QLuaCore
+SUBDIRS += QLuaCore \
+    lua
 SUBDIRS += ConFigFileTest
