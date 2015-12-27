@@ -113,6 +113,11 @@ QLUACORESHARED_EXPORT void luaL_printTable(lua_State *,std::function<void(const 
 class QLUACORESHARED_EXPORT LuaConfigFile{
     class LuaConfigFileCore;
     std::shared_ptr<LuaConfigFileCore> dataCore;
+private:
+    template<typename T>
+    QVariant _read(const T & ,QVariant ) const;
+    template<typename T>
+    bool _write(const T & valueName,const QVariant &);
 public:
     LuaConfigFile();
     virtual ~LuaConfigFile();
@@ -120,8 +125,18 @@ public:
     bool load( const QString & ) ;
     bool save( const QString &/*fileName*/,const QString & /*tablename/global name*/)const;
     const std::string & errorCode()const;
-    QVariant read( const std::initializer_list<QVariant> & valueName ,QVariant defauleValue = QVariant() ) const;
+
+    QVariant read(const std::initializer_list<QVariant> & valueName,QVariant defauleValue=QVariant()) const ;
+    QVariant read(const std::vector<QVariant> & valueName,QVariant defauleValue=QVariant()) const ;
+    QVariant read(const std::list<QVariant> & valueName,QVariant defauleValue=QVariant()) const ;
+    QVariant read(const QList<QVariant> & valueName,QVariant defauleValue=QVariant()) const ;
+    QVariant read(const QVector<QVariant> & valueName,QVariant defauleValue=QVariant()) const ;
+
     bool write(const std::initializer_list<QVariant> & valueName,const QVariant &);
+    bool write(const std::vector<QVariant> & valueName,const QVariant &);
+    bool write(const std::list<QVariant> & valueName,const QVariant &);
+    bool write(const QList<QVariant> & valueName,const QVariant &);
+    bool write(const QVector<QVariant> & valueName,const QVariant &);
 };
 
 
