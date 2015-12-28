@@ -614,7 +614,8 @@ public:
         /*Pushes onto the stack the value of the global name. Returns the type of that value.*/
         auto type = lua_getglobal(L,pos_->toString().toUtf8().constData());
 
-        if ( valueName.size()==1 ) {
+        ++pos_;
+        if ( (pos_ != end_ ) == false ) {
             switch (type) {
                 case LUA_TNIL: return defauleValue; break;
                 case LUA_TBOOLEAN:return lua_toboolean(L,-1); break;
@@ -627,7 +628,7 @@ public:
             return defauleValue;
         }
 
-        for (;(++pos_)!=end_; ) {
+        for (; pos_!=end_;++pos_ ) {
             const auto & i=*pos_;
             if (i.isValid()==false) {
                 errorString="nil key";
@@ -713,15 +714,16 @@ public:
         else { key_=pos_->toString().toUtf8(); }
         if (key_.isEmpty()) { errorString="global key is null"; return false; }
 
-        if (valueName.size()==1) {
+        auto opos_ = ++pos_ ;
+        const auto end_=valueName.end();
+
+        if ( (opos_ != end_)==false ) {
             if (push_value(value)) {
                 lua_setglobal(L,key_.constData());
                 return true;
             }
             else { return false; }
         }
-
-        const auto end_=valueName.end();
 
         auto type=lua_getglobal(L,key_.constData());
         if ( (type == LUA_TNIL) ||(type == LUA_TNONE) ) {
@@ -730,7 +732,6 @@ public:
             type=lua_getglobal(L,key_.constData());
         }
 
-        auto opos_ = ++pos_ ;
         ++pos_;
 
         if (LUA_TTABLE==type) {
@@ -879,7 +880,7 @@ QVariant LuaConfigFile::_read(
     const T & valueName,
     QVariant defauleValue )const try{
 
-    if (valueName.size()<=0) {
+    if ( (valueName.begin() != valueName.end()) == false ) {
         dataCore->errorString="null name";
         return defauleValue;
     }
@@ -905,7 +906,10 @@ template<typename T>
 bool LuaConfigFile::_write(
     const T & valueName,
     const QVariant & value) try{
-    if (valueName.size()<=0) { dataCore->errorString="null valueName"; return false; }
+    if ( (valueName.begin()!=valueName.end())==false ) { 
+        dataCore->errorString="null valueName";
+        return false;
+    }
     class StackLock {
         lua_State * L_;
         int size_;
@@ -972,6 +976,12 @@ QVariant LuaConfigFile::read(const QList<QVariant> & valueName,QVariant defauleV
 QVariant LuaConfigFile::read(const QVector<QVariant> & valueName,QVariant defauleValue ) const {
     return _read(valueName,std::move( defauleValue ));
 }
+QVariant LuaConfigFile::read(const std::deque<QVariant> & valueName,QVariant defauleValue ) const {
+    return _read(valueName,std::move( defauleValue ));
+}
+QVariant LuaConfigFile::read(const std::forward_list<QVariant> & valueName,QVariant defauleValue ) const {
+    return _read(valueName,std::move( defauleValue ));
+}
 
 bool LuaConfigFile::write(const std::initializer_list<QVariant> & a,const QVariant & b){
     return _write(a,b);
@@ -988,6 +998,11 @@ bool LuaConfigFile::write(const std::list<QVariant> & a,const QVariant & b){
 bool LuaConfigFile::write(const std::vector<QVariant> & a,const QVariant & b){
     return _write(a,b);
 }
-
+bool LuaConfigFile::write(const std::deque<QVariant> & a,const QVariant & b){
+    return _write(a,b);
+}
+bool LuaConfigFile::write(const std::forward_list<QVariant> & a,const QVariant & b){
+    return _write(a,b);
+}
 /********************************/
 

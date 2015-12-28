@@ -131,12 +131,16 @@ public:
     QVariant read(const std::list<QVariant> & valueName,QVariant defauleValue=QVariant()) const ;
     QVariant read(const QList<QVariant> & valueName,QVariant defauleValue=QVariant()) const ;
     QVariant read(const QVector<QVariant> & valueName,QVariant defauleValue=QVariant()) const ;
+    QVariant read(const std::deque<QVariant> & valueName,QVariant defauleValue=QVariant()) const;
+    QVariant read(const std::forward_list<QVariant> & valueName,QVariant defauleValue=QVariant()) const;
 
     bool write(const std::initializer_list<QVariant> & valueName,const QVariant &);
     bool write(const std::vector<QVariant> & valueName,const QVariant &);
     bool write(const std::list<QVariant> & valueName,const QVariant &);
     bool write(const QList<QVariant> & valueName,const QVariant &);
     bool write(const QVector<QVariant> & valueName,const QVariant &);
+    bool write(const std::deque<QVariant> & valueName,const QVariant &);
+    bool write(const std::forward_list<QVariant> & valueName,const QVariant &);
 };
 
 
