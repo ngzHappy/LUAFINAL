@@ -4,6 +4,8 @@
 #include "qluacore_global.hpp"
 #include "LUASource/lua.hpp"
 #include "QLuaCoreDetail.hpp"
+#include "QSTDSharedPointer.hpp"
+#include "STDLIBS/STDLIBS.hpp"
 
 class QLUACORESHARED_EXPORT QLuaCore
 {

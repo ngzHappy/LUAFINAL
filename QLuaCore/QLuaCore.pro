@@ -12,9 +12,11 @@ SOURCES += QLuaCore.cpp \
     QLuaCoreDetail.cpp
 
 HEADERS += $$PWD/QLuaCore.hpp \
-    QLuaCoreDetail.hpp
+    QLuaCoreDetail.hpp \
+    QSTDSharedPointer.hpp
 HEADERS += $$PWD/qluacore_global.hpp
 
+include( $$PWD/STDLIBS/stdlibsc14.pri )
 include( $$PWD/LUASource/qlua.pri )
 include( $$PWD/../BuildPaths.pri )
 

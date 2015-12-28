@@ -97,6 +97,7 @@
 using namespace std::chrono_literals;
 using namespace std::string_literals;
 
+
 class QLUACORESHARED_EXPORT QLuaCoreDetail
 {
 public:
