@@ -9,10 +9,46 @@ TEMPLATE = subdirs
 QLuaCore.file = $$PWD/QLuaCore/QLuaCore.pro
 ConFigFileTest.file = $$PWD/ConFigFileTest/ConFigFileTest.pro
 lua.file = $$PWD/lua/lua.pro
+qlua.file = $$PWD/qlua/qlua.pro
+CCTTest.file = $$PWD/CCTTest/CCTTest.pro
 
 ConFigFileTest.depends += QLuaCore
 lua.depends += QLuaCore
+qlua.depends += QLuaCore
+CCTTest.depends += QLuaCore
 
 SUBDIRS += QLuaCore
+SUBDIRS += CCTTest
+SUBDIRS += qlua
 SUBDIRS += lua
 SUBDIRS += ConFigFileTest
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
