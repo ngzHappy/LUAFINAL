@@ -28,6 +28,7 @@
 #include "FType.hpp"
 #include "TempOptional.hpp"
 #include "TemplateString.hpp"
+#include "TypeMemory.hpp"
 
 #endif
 

@@ -24,4 +24,5 @@ HEADERS += \
     $$PWD/STDLIBS.hpp \
     $$PWD/FType.hpp \
     $$PWD/TempOptional.hpp \
-    $$PWD/TemplateString.hpp
+    $$PWD/TemplateString.hpp \
+    $$PWD/TypeMemory.hpp
