@@ -24,3 +24,5 @@ ConFigFileTest/test.lua
 ConFigFileTest/t1.lua
 ConFigFileTest/release/moc_MainWindow.cpp
 ConFigFileTest/debug/moc_MainWindow.cpp
+CCTTest/release/moc_MainWindow.cpp
+CCTTest/debug/moc_MainWindow.cpp
