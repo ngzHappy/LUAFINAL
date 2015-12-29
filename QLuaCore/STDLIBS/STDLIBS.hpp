@@ -29,6 +29,7 @@
 #include "TempOptional.hpp"
 #include "TemplateString.hpp"
 #include "TypeMemory.hpp"
+#include "ConceptPointer.hpp"
 
 #endif
 

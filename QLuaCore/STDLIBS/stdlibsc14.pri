@@ -25,4 +25,5 @@ HEADERS += \
     $$PWD/FType.hpp \
     $$PWD/TempOptional.hpp \
     $$PWD/TemplateString.hpp \
-    $$PWD/TypeMemory.hpp
+    $$PWD/TypeMemory.hpp \
+    $$PWD/ConceptPointer.hpp
