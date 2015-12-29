@@ -26,3 +26,9 @@ ConFigFileTest/release/moc_MainWindow.cpp
 ConFigFileTest/debug/moc_MainWindow.cpp
 CCTTest/release/moc_MainWindow.cpp
 CCTTest/debug/moc_MainWindow.cpp
+QLuaCore/debug/moc_quagzipfile.cpp
+QLuaCore/debug/moc_quaziodevice.cpp
+QLuaCore/debug/moc_quazipfile.cpp
+QLuaCore/release/moc_quazipfile.cpp
+QLuaCore/release/moc_quaziodevice.cpp
+QLuaCore/release/moc_quagzipfile.cpp
