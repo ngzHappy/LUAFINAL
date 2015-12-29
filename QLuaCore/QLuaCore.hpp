@@ -6,6 +6,8 @@
 #include "QLuaCoreDetail.hpp"
 #include "QSTDSharedPointer.hpp"
 #include "STDLIBS/STDLIBS.hpp"
+#include "QUAZIP/quazip.h"
+#include "QUAZIP/quazipfile.h"
 
 class QLUACORESHARED_EXPORT QLuaCore
 {
