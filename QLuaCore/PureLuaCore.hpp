@@ -495,7 +495,7 @@ catch (std::string & xerr) { errorCode=xerr; return false; }
 catch (...) { errorCode="unknow error"; return false; }
 
 template<typename IT_,typename IU_,typename ValueType >
-static bool PureLuaCore::__setGlobal(
+bool PureLuaCore::__setGlobal(
         const lua_State * const & L,
         IT_ b,IU_ e,
         const ValueType & v,std::string & errorCode) try {

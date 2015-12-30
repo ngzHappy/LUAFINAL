@@ -3,7 +3,7 @@
 
 
 #include <QLuaCore.hpp>
-#include "PureLuaCore.hpp"
+
 
 void test(bool v,std::string e) { if (v==false) { throw e; } }
 
