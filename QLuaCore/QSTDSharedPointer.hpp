@@ -10,6 +10,7 @@
 
 Q_DECLARE_METATYPE( std::weak_ptr<QObject> )
 Q_DECLARE_METATYPE( std::shared_ptr<QObject> )
+Q_DECLARE_METATYPE( lua_CFunction )
 
 namespace cct {
 
