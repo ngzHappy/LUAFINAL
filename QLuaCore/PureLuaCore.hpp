@@ -114,34 +114,34 @@ public:
     static void setGlobal(const lua_State * const &,const QString &,const char *);
 
     static void setGlobal(const lua_State * const &L,const char * const &k,const std::string &v) { setGlobal(L,k,v.c_str(),v.size()); }
-    static void setGlobal(const lua_State * const &L,const std::string &k,const std::string &v) {setGlobal(L,k,v.c_str(),v.size());}
-    static void setGlobal(const lua_State * const &L,const QByteArray &k,const std::string &v) {setGlobal(L,k,v.c_str(),v.size());}
-    static void setGlobal(const lua_State * const &L,const QString &k,const std::string &v) {setGlobal(L,k,v.c_str(),v.size());}
+    static void setGlobal(const lua_State * const &L,const std::string &k,const std::string &v) { setGlobal(L,k,v.c_str(),v.size()); }
+    static void setGlobal(const lua_State * const &L,const QByteArray &k,const std::string &v) { setGlobal(L,k,v.c_str(),v.size()); }
+    static void setGlobal(const lua_State * const &L,const QString &k,const std::string &v) { setGlobal(L,k,v.c_str(),v.size()); }
 
     static void setGlobal(const lua_State * const &L,const char * const &k,const QByteArray &v) { setGlobal(L,k,v.constData(),v.size()); }
-    static void setGlobal(const lua_State * const &L,const std::string &k,const QByteArray &v) {setGlobal(L,k,v.constData(),v.size());}
-    static void setGlobal(const lua_State * const &L,const QByteArray &k,const QByteArray &v) {setGlobal(L,k,v.constData(),v.size());}
-    static void setGlobal(const lua_State * const &L,const QString &k,const QByteArray &v) {setGlobal(L,k,v.constData(),v.size());}
+    static void setGlobal(const lua_State * const &L,const std::string &k,const QByteArray &v) { setGlobal(L,k,v.constData(),v.size()); }
+    static void setGlobal(const lua_State * const &L,const QByteArray &k,const QByteArray &v) { setGlobal(L,k,v.constData(),v.size()); }
+    static void setGlobal(const lua_State * const &L,const QString &k,const QByteArray &v) { setGlobal(L,k,v.constData(),v.size()); }
 
     static void setGlobal(const lua_State * const &L,const char * const &k,const QString &v_) { const auto v=v_.toUtf8(); setGlobal(L,k,v.constData(),v.size()); }
-    static void setGlobal(const lua_State * const &L,const std::string &k,const QString &v_) {const auto v=v_.toUtf8();setGlobal(L,k,v.constData(),v.size());}
-    static void setGlobal(const lua_State * const &L,const QByteArray &k,const QString &v_) {const auto v=v_.toUtf8();setGlobal(L,k,v.constData(),v.size());}
-    static void setGlobal(const lua_State * const &L,const QString &k,const QString &v_) {const auto v=v_.toUtf8();setGlobal(L,k,v.constData(),v.size());}
+    static void setGlobal(const lua_State * const &L,const std::string &k,const QString &v_) { const auto v=v_.toUtf8(); setGlobal(L,k,v.constData(),v.size()); }
+    static void setGlobal(const lua_State * const &L,const QByteArray &k,const QString &v_) { const auto v=v_.toUtf8(); setGlobal(L,k,v.constData(),v.size()); }
+    static void setGlobal(const lua_State * const &L,const QString &k,const QString &v_) { const auto v=v_.toUtf8(); setGlobal(L,k,v.constData(),v.size()); }
 
-    void setGlobal( const char * const &k,const std::string &v) { setGlobal(k,v.c_str(),v.size()); }
-    void setGlobal( const std::string &k,const std::string &v) {setGlobal(k,v.c_str(),v.size());}
-    void setGlobal( const QByteArray &k,const std::string &v) {setGlobal(k,v.c_str(),v.size());}
-    void setGlobal( const QString &k,const std::string &v) {setGlobal(k,v.c_str(),v.size());}
+    void setGlobal(const char * const &k,const std::string &v) { setGlobal(k,v.c_str(),v.size()); }
+    void setGlobal(const std::string &k,const std::string &v) { setGlobal(k,v.c_str(),v.size()); }
+    void setGlobal(const QByteArray &k,const std::string &v) { setGlobal(k,v.c_str(),v.size()); }
+    void setGlobal(const QString &k,const std::string &v) { setGlobal(k,v.c_str(),v.size()); }
 
-    void setGlobal( const char * const &k,const QByteArray &v) { setGlobal(k,v.constData(),v.size()); }
-    void setGlobal( const std::string &k,const QByteArray &v) {setGlobal(k,v.constData(),v.size());}
-    void setGlobal( const QByteArray &k,const QByteArray &v) {setGlobal(k,v.constData(),v.size());}
-    void setGlobal( const QString &k,const QByteArray &v) {setGlobal(k,v.constData(),v.size());}
+    void setGlobal(const char * const &k,const QByteArray &v) { setGlobal(k,v.constData(),v.size()); }
+    void setGlobal(const std::string &k,const QByteArray &v) { setGlobal(k,v.constData(),v.size()); }
+    void setGlobal(const QByteArray &k,const QByteArray &v) { setGlobal(k,v.constData(),v.size()); }
+    void setGlobal(const QString &k,const QByteArray &v) { setGlobal(k,v.constData(),v.size()); }
 
-    void setGlobal( const char * const &k,const QString &v_) { const auto v=v_.toUtf8(); setGlobal(k,v.constData(),v.size()); }
-    void setGlobal( const std::string &k,const QString &v_) {const auto v=v_.toUtf8();setGlobal(k,v.constData(),v.size());}
-    void setGlobal( const QByteArray &k,const QString &v_) {const auto v=v_.toUtf8();setGlobal(k,v.constData(),v.size());}
-    void setGlobal( const QString &k,const QString &v_) {const auto v=v_.toUtf8();setGlobal(k,v.constData(),v.size());}
+    void setGlobal(const char * const &k,const QString &v_) { const auto v=v_.toUtf8(); setGlobal(k,v.constData(),v.size()); }
+    void setGlobal(const std::string &k,const QString &v_) { const auto v=v_.toUtf8(); setGlobal(k,v.constData(),v.size()); }
+    void setGlobal(const QByteArray &k,const QString &v_) { const auto v=v_.toUtf8(); setGlobal(k,v.constData(),v.size()); }
+    void setGlobal(const QString &k,const QString &v_) { const auto v=v_.toUtf8(); setGlobal(k,v.constData(),v.size()); }
 
     void setGlobal(const char * const &);
     void setGlobal(const char * const &,const char *,lua_Integer);

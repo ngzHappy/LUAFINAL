@@ -34,6 +34,16 @@ int main(int argc, char *argv[])try{
             test(core.getTop()==1,"3");
         }
 
+        core.setTop();
+
+        {
+            std::forward_list<std::string> test2({ { "m22" },{ "dd" } });
+            core.setGlobals(test2.begin(),test2.end(),"77");
+            test( core.getGlobals(test2.begin(),test2.end() )== cct::PureLuaCore::LUAType::STRING ,"q type");
+            qDebug()<< core.toQVariant();
+            test(core.toQVariant(-1)=="77","4");
+            test(core.getTop()==1,"5");
+        }
 
 
     }
