@@ -8,6 +8,7 @@
 #include "STDLIBS/STDLIBS.hpp"
 #include "QUAZIP/quazip.h"
 #include "QUAZIP/quazipfile.h"
+#include "PureLuaCore.hpp"
 
 class QLUACORESHARED_EXPORT QLuaCore
 {

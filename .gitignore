@@ -32,3 +32,10 @@ QLuaCore/debug/moc_quazipfile.cpp
 QLuaCore/release/moc_quazipfile.cpp
 QLuaCore/release/moc_quaziodevice.cpp
 QLuaCore/release/moc_quagzipfile.cpp
+*.cd
+LUATest/debug/moc_MainWindow.cpp
+QLuaCore/QLuaCore.hpp
+LUATest/release/moc_MainWindow.cpp
+*.autosave
+QLuaCore/QLuaCore.hpp
+QLuaCore/QLuaCore.hpp
