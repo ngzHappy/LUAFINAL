@@ -3,7 +3,7 @@
 
 #include <QLuaCore.hpp>
 namespace cct {
-class PureLuaCore {
+class QLUACORESHARED_EXPORT PureLuaCore {
 public:
     enum class LUAType : int {
         NONE=LUA_TNONE,
