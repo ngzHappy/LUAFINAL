@@ -230,7 +230,6 @@ public:
     template<typename SizeType>
     static LUAType getTable(const lua_State * const & L_,const int table,const char *const &key,const SizeType & l) { pushKey(L_,key,static_cast<size_t>(l)); return getTable(L_,table); }
    
-
     LUAType getTable(const int table)const { auto L_=__state(); if (L_==nullptr) { return LUAType::NONE; }return getTable(L_,table); }
     template<typename KeyType>
     LUAType getTable(const int table,const KeyType &key) { auto L_=__state(); if (L_==nullptr) { return LUAType::NONE; } pushKey(L_,key); return getTable(L_,table); }
