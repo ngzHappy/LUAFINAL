@@ -19,6 +19,23 @@ public:
     };
     typedef std::size_t size_t;
 protected:
+
+    template<typename T,typename U = void >
+    class __StringCallIndex {public:enum {value=0};/* this is not char[N] or char * */};
+
+    template<typename T>
+    class __StringCallIndex<T,typename std::enable_if<
+        std::is_array< typename std::remove_reference<T>::type >::value ,
+        void>::type > {public:enum {value=1};/* if it is char[N] */};
+
+    template<typename T>
+    class __StringCallIndex<T,typename std::enable_if<
+        (std::is_same<const char *,typename std::remove_reference<T>::type>::value)||
+        (std::is_same<char *,typename std::remove_reference<T>::type>::value)||
+        (std::is_same<char * const,typename std::remove_reference<T>::type>::value)||
+        (std::is_same<const char * const,typename std::remove_reference<T>::type>::value),
+        void>::type > {public:enum {value=2};/* if it is char * */};
+
     class __PureLuaCorePrivate;
     std::shared_ptr< __PureLuaCorePrivate > dataCore;
     void __PureLuaCore(std::shared_ptr<lua_State>,void * xpointer=reinterpret_cast<void *>(1));
@@ -54,6 +71,89 @@ protected:
     static LUAType _v__getGlobal(const lua_State * const & L_,const QVariant&);
 
     lua_State * __state()const;
+private:
+
+    template<typename T,unsigned int N = __StringCallIndex<T>::value >
+    class __PublishKey {public:/*0*/
+        static void pushKey(const lua_State * const & L_,const std::string & value) { __pushKey(L_,value.c_str(),static_cast<size_t>(value.size())); }
+        static void pushKey(const lua_State * const & L_,const QByteArray & value) { __pushKey(L_,value.constData(),static_cast<size_t>(value.size())); }
+        static void pushKey(const lua_State * const & L_,const QString & value_) { const auto value=value_.toUtf8(); __pushKey(L_,value.constData(),static_cast<size_t>(value.size())); }
+        static void pushKey(const lua_State * const & L_,const lua_Integer value) { _i_pushKey(L_,value); }
+        static void pushKey(const lua_State * const & L_,const lua_Number value) { _i_pushKey(L_,static_cast<lua_Integer>(value)); }
+        static void pushKey(const lua_State * const & L_,const QVariant &value) { _v_pushKey(L_,value); }
+    };
+
+    template<typename T >
+    class __PublishKey<T,1> {public:/*1*/
+        template<typename CharType_,size_t NNN> 
+        static void pushKey(const lua_State * const & L_,const  CharType_(&value)[NNN]) { __pushKey(L_,value,static_cast<size_t>(NNN-1)); }
+    };
+
+    template<typename T >
+    class __PublishKey<T,2> {public:/*2*/
+        static void pushKey(const lua_State * const & L_,const char * const &value) { __pushKey(L_,value); }
+    };
+
+    template<typename T,unsigned int N = __StringCallIndex<T>::value >
+    class __PushValue {public:/*0*/
+        static void pushValue(const lua_State * const & L_,const std::string & value) { __pushKey(L_,value.c_str(),static_cast<size_t>(value.size())); }
+        static void pushValue(const lua_State * const & L_,const QByteArray & value) { __pushKey(L_,value.constData(),static_cast<size_t>(value.size())); }
+        static void pushValue(const lua_State * const & L_,const QString & value_) { const auto value=value_.toUtf8(); __pushKey(L_,value.constData(),static_cast<size_t>(value.size())); }
+        static void pushValue(const lua_State * const & L_,const lua_Integer value) { _i_pushKey(L_,value); }
+        static void pushValue(const lua_State * const & L_,const lua_Number value) { _n_pushValue(L_,value); }
+        static void pushValue(const lua_State * const & L_,const bool value) { _b_pushValue(L_,value); }
+        static void pushValue(const lua_State * const & L_,lua_CFunction value) { _f_pushValue(L_,value); }
+        static void pushValue(const lua_State * const & L_,const QVariant &value) { _v_pushValue(L_,value); }
+    };
+
+    template<typename T>
+    class __PushValue<T,1> {public:/*1*/
+        template<typename CharType_,size_t NNN> 
+        static void pushValue(const lua_State * const & L_,const CharType_(&value)[NNN]) { __pushKey(L_,value,static_cast<size_t>(NNN-1)); }
+    };
+
+    template<typename T>
+    class __PushValue<T,2> { public:/*2*/ 
+        static void pushValue(const lua_State * const & L_,const char * const & value) { __pushKey(L_,value); }
+    };
+
+    template<typename T,unsigned int N = __StringCallIndex<T>::value>
+    class __SetGlobal {public:/*0*/
+        static void setGlobal(const lua_State * const & L_,const std::string & name) { __setglobal(L_,name.c_str()); }
+        static void setGlobal(const lua_State * const & L_,const QByteArray & name) { __setglobal(L_,name.constData()); }
+        static void setGlobal(const lua_State * const & L_,const QString & name_) { const auto name=name_.toUtf8();  __setglobal(L_,name.constData()); }
+        static void setGlobal(const lua_State * const & L_,const QVariant & name_) { _v_setglobal(L_,name_); }
+    };
+
+    template<typename T>
+    class __SetGlobal<T,1> { public:/*1*/
+        template<typename CharType_,size_t NNN> 
+        static void setGlobal(const lua_State * const & L_,const CharType_(&name)[NNN]) { __setglobal(L_,name); }
+    };
+
+    template<typename T>
+    class __SetGlobal<T,2> { public:/*2*/
+        static void setGlobal(const lua_State * const & L_,const char * const& name) { __setglobal(L_,name); }
+    };
+
+    template<typename T,unsigned int N = __StringCallIndex<T>::value>
+    class __GetGlobal {public:/*0*/
+        static LUAType getGlobal(const lua_State * const & L_,const std::string & key) { return ___getGlobal(L_,key.c_str()); }
+        static LUAType getGlobal(const lua_State * const & L_,const QByteArray & key) { return ___getGlobal(L_,key.constData()); }
+        static LUAType getGlobal(const lua_State * const & L_,const QString & key) { const auto v__=key.toUtf8(); return ___getGlobal(L_,v__.constData()); }
+        static LUAType getGlobal(const lua_State * const & L_,const QVariant & key) { return _v__getGlobal(L_,key); }
+    };
+
+    template<typename T>
+    class __GetGlobal<T,1> {public:/*1*/
+        template<typename CharType_,size_t NNN>
+        static LUAType getGlobal(const lua_State * const & L_,const CharType_(&key)[NNN]) { return ___getGlobal(L_,key); }
+    };
+
+    template<typename T>
+    class __GetGlobal<T,2> {public:/*2*/
+        static LUAType getGlobal(const lua_State * const & L_,const char * const & key) { return ___getGlobal(L_,key); }
+    };
 public:
 
     PureLuaCore() { __PureLuaCore(nullptr,nullptr); }
@@ -68,67 +168,34 @@ public:
 
     template<typename SizeType>
     static void pushKey(const lua_State * const & L_,const char * const & value,SizeType l) { __pushKey(L_,value,static_cast<size_t>(l)); }
-    static void pushKey(const lua_State * const & L_,const char * const &value) { __pushKey(L_,value); }
-    template<typename CharType_,size_t NNN> static void pushKey(const lua_State * const & L_,const  CharType_(&value)[NNN]) { __pushKey(L_,value,static_cast<size_t>(NNN-1)); }
-    static void pushKey(const lua_State * const & L_,const std::string & value) { pushKey(L_,value.c_str(),static_cast<size_t>(value.size())); }
-    static void pushKey(const lua_State * const & L_,const QByteArray & value) { pushKey(L_,value.constData(),static_cast<size_t>(value.size())); }
-    static void pushKey(const lua_State * const & L_,const QString & value_) { const auto value=value_.toUtf8(); pushKey(L_,value.constData(),static_cast<size_t>(value.size())); }
-    static void pushKey(const lua_State * const & L_,const lua_Integer value) { _i_pushKey(L_,value); }
-    static void pushKey(const lua_State * const & L_,const lua_Number value) { pushKey(L_,static_cast<lua_Integer>(value)); }
-    static void pushKey(const lua_State * const & L_,const QVariant &value) { _v_pushKey(L_,value); }
+    template<typename t__T>
+    static void pushKey(const lua_State * const & L_,const t__T & v) { __PublishKey<t__T>::pushKey(L_,v); }
 
     template<typename Size_Type_>
     static void pushValue(const lua_State * const & L_,const char * const & value,Size_Type_ l) { __pushKey(L_,value,static_cast<size_t>(l)); }
-    static void pushValue(const lua_State * const & L_,const char * const & value) { __pushKey(L_,value); }
-    template<typename CharType_,size_t NNN> static void pushValue(const lua_State * const & L_,const CharType_(&value)[NNN]) { __pushKey(L_,value,static_cast<size_t>(NNN-1)); }
-    static void pushValue(const lua_State * const & L_,const std::string & value) { pushKey(L_,value.c_str(),static_cast<size_t>(value.size())); }
-    static void pushValue(const lua_State * const & L_,const QByteArray & value) { pushKey(L_,value.constData(),static_cast<size_t>(value.size())); }
-    static void pushValue(const lua_State * const & L_,const QString & value_) { const auto value=value_.toUtf8(); pushKey(L_,value.constData(),static_cast<size_t>(value.size())); }
-    static void pushValue(const lua_State * const & L_,const lua_Integer value) { _i_pushKey(L_,value); }
-    static void pushValue(const lua_State * const & L_,const lua_Number value) { _n_pushValue(L_,value); }
-    static void pushValue(const lua_State * const & L_,const bool value) { _b_pushValue(L_,value); }
-    static void pushValue(const lua_State * const & L_,lua_CFunction value) { _f_pushValue(L_,value); }
-    static void pushValue(const lua_State * const & L_,const QVariant &value) { _v_pushValue(L_,value); }
-public:
-    template<typename Size_Type_> void pushKey(const char * const & value,Size_Type_ l) { auto L_=__state(); if (L_==nullptr) { return; } __pushKey(L_,value,static_cast<size_t>(l) ); }
-    void pushKey(const char * const &value) { auto L_=__state(); if (L_==nullptr) { return; } __pushKey(L_,value); }
-    template<typename CharType_,size_t NNN> void pushKey(const CharType_(&value)[NNN]) { auto L_=__state(); if (L_==nullptr) { return; } __pushKey(L_,value,static_cast<size_t>(NNN-1)); }
-    void pushKey(const std::string & value) { auto L_=__state(); if (L_==nullptr) { return; } pushKey(L_,value.c_str(),static_cast<size_t>(value.size())); }
-    void pushKey(const QByteArray & value) { auto L_=__state(); if (L_==nullptr) { return; } pushKey(L_,value.constData(),static_cast<size_t>(value.size())); }
-    void pushKey(const QString & value_) { auto L_=__state(); if (L_==nullptr) { return; }const auto value=value_.toUtf8(); pushKey(L_,value.constData(),static_cast<size_t>(value.size())); }
-    void pushKey(const lua_Integer value) { auto L_=__state(); if (L_==nullptr) { return; }_i_pushKey(L_,value); }
-    void pushKey(const lua_Number value) { auto L_=__state(); if (L_==nullptr) { return; } pushKey(L_,static_cast<lua_Integer>(value)); }
-    void pushKey(const QVariant &value) { auto L_=__state(); if (L_==nullptr) { return; }_v_pushKey(L_,value); }
+    template<typename t__T>
+    static void pushValue(const lua_State * const & L_,const t__T &value) { __PushValue<t__T>::pushValue(L_,value); }
 
-    template<typename Size_Type_>void pushValue(const char * const & value,Size_Type_ l) { auto L_=__state(); if (L_==nullptr) { return; } __pushKey(L_,value,static_cast<size_t>(l)); }
-    void pushValue(const char * const & value) { auto L_=__state(); if (L_==nullptr) { return; } __pushKey(L_,value); }
-    template<typename CharType_, size_t NNN> void pushValue(const CharType_( & value/**/)[NNN] ) { auto L_=__state(); if (L_==nullptr) { return; } __pushKey(L_,value,static_cast<size_t>(NNN-1)); }
-    void pushValue(const std::string & value) { auto L_=__state(); if (L_==nullptr) { return; } pushKey(L_,value.c_str(),static_cast<size_t>(value.size())); }
-    void pushValue(const QByteArray & value) { auto L_=__state(); if (L_==nullptr) { return; } pushKey(L_,value.constData(),static_cast<size_t>(value.size())); }
-    void pushValue(const QString & value_) { auto L_=__state(); if (L_==nullptr) { return; } const auto value=value_.toUtf8(); pushKey(L_,value.constData(),static_cast<size_t>(value.size())); }
-    void pushValue(const lua_Integer value) { auto L_=__state(); if (L_==nullptr) { return; } _i_pushKey(L_,value); }
-    void pushValue(const lua_Number value) { auto L_=__state(); if (L_==nullptr) { return; } _n_pushValue(L_,value); }
-    void pushValue(const bool value) { auto L_=__state(); if (L_==nullptr) { return; } _b_pushValue(L_,value); }
-    void pushValue(lua_CFunction value) { auto L_=__state(); if (L_==nullptr) { return; } _f_pushValue(L_,value); }
-    void pushValue(const QVariant &value) { auto L_=__state(); if (L_==nullptr) { return; } _v_pushValue(L_,value); }
+public:
+    template<typename Size_Type_> 
+    void pushKey(const char * const & value,Size_Type_ l) { auto L_=__state(); if (L_==nullptr) { return; } pushKey(L_,value,static_cast<size_t>(l) ); }
+    template<typename t__T>
+    void pushKey(const t__T &value) { auto L_=__state(); if (L_==nullptr) { return; } pushKey(L_,value); }
+
+    template<typename Size_Type_>
+    void pushValue(const char * const & value,Size_Type_ l) { auto L_=__state(); if (L_==nullptr) { return; } __pushKey(L_,value,static_cast<size_t>(l)); }
+    template<typename t__T> 
+    void pushValue(const t__T & v) { auto L_=__state(); if (L_==nullptr) { return; }pushValue(L_,v); }
 public:
     template<typename Size_Type_>
     static void setGlobal(const lua_State * const & L_,const char * const& name,Size_Type_ ) { __setglobal(L_,name); }
-    static void setGlobal(const lua_State * const & L_,const char * const& name) { __setglobal(L_,name); }
-    template<typename CharType_,size_t NNN> static void setGlobal(const lua_State * const & L_,const CharType_(&name)[NNN]) { __setglobal(L_,name); }
-    static void setGlobal(const lua_State * const & L_,const std::string & name) { __setglobal(L_,name.c_str()); }
-    static void setGlobal(const lua_State * const & L_,const QByteArray & name) { __setglobal(L_,name.constData()); }
-    static void setGlobal(const lua_State * const & L_,const QString & name_) { const auto name=name_.toUtf8();  __setglobal(L_,name.constData()); }
-    static void setGlobal(const lua_State * const & L_,const QVariant & name_) { _v_setglobal(L_,name_); }
+    template<typename t__T>
+    static void setGlobal(const lua_State * const & L_,const t__T & value) { __SetGlobal<t__T>::setGlobal(L_,value); }
 
     template<typename Size_Type_>
     void setGlobal(const char * const& name,Size_Type_ ) { auto L_=__state(); if (L_==nullptr) { return; }  __setglobal(L_,name); }
-    void setGlobal(const char * const& name) { auto L_=__state(); if (L_==nullptr) { return; } __setglobal(L_,name); }
-    template<typename CharType_,size_t NNN>void setGlobal(const CharType_(&name)[NNN]) { auto L_=__state(); if (L_==nullptr) { return; } __setglobal(L_,name); }
-    void setGlobal(const std::string & name) { auto L_=__state(); if (L_==nullptr) { return; }  __setglobal(L_,name.c_str()); }
-    void setGlobal(const QByteArray & name) { auto L_=__state(); if (L_==nullptr) { return; }  __setglobal(L_,name.constData()); }
-    void setGlobal(const QString & name_) { auto L_=__state(); if (L_==nullptr) { return; } const auto name=name_.toUtf8();  __setglobal(L_,name.constData()); }
-    void setGlobal(const QVariant & name_) { auto L_=__state(); if (L_==nullptr) { return; }setGlobal(L_,name_); }
+    template<typename t__T>
+    static void setGlobal(const t__T & value) { auto L_=__state(); if (L_==nullptr) { return; } __SetGlobal<t__T>::setGlobal(L_,value); }
 
 public:
     template<typename NameType,typename ValueType>
@@ -149,37 +216,27 @@ public:
 public:
     template<typename  SizeType>
     static LUAType getGlobal(const lua_State * const & L_,const char * const & key,SizeType ) { return ___getGlobal(L_,key); }
-    static LUAType getGlobal(const lua_State * const & L_,const char * const & key) { return ___getGlobal(L_,key); }
-    template<typename CharType_,size_t NNN>static LUAType getGlobal(const lua_State * const & L_,const CharType_(&key)[NNN]) { return ___getGlobal(L_,key); }
-    static LUAType getGlobal(const lua_State * const & L_,const std::string & key) { return getGlobal(L_,key.c_str()); }
-    static LUAType getGlobal(const lua_State * const & L_,const QByteArray & key) { return getGlobal(L_,key.constData()); }
-    static LUAType getGlobal(const lua_State * const & L_,const QString & key) { const auto v__=key.toUtf8(); return getGlobal(L_,v__.constData()); }
-    static LUAType getGlobal(const lua_State * const & L_,const QVariant & key) { return _v__getGlobal(L_,key); }
-
+    template<typename t__T>
+    static LUAType getGlobal(const lua_State * const & L_,const t__T & value) { return __GetGlobal<t__T>::getGlobal(L_,value); }
+   
     template<typename  SizeType>
     LUAType getGlobal(const char * const & key,SizeType )const { auto L_=__state(); if (L_==nullptr) { return LUAType::NONE; }return ___getGlobal(L_,key); }
-    LUAType getGlobal(const char * const & key)const { auto L_=__state(); if (L_==nullptr) { return LUAType::NONE; } return ___getGlobal(L_,key); }
-    template<typename CharType_,size_t NNN>LUAType getGlobal(const char(&key)[NNN])const { auto L_=__state(); if (L_==nullptr) { return LUAType::NONE; }return ___getGlobal(L_,key); }
-    LUAType getGlobal(const std::string & key)const { auto L_=__state(); if (L_==nullptr) { return LUAType::NONE; }return getGlobal(L_,key.c_str()); }
-    LUAType getGlobal(const QByteArray & key)const { auto L_=__state(); if (L_==nullptr) { return LUAType::NONE; }return getGlobal(L_,key.constData()); }
-    LUAType getGlobal(const QString & key)const { auto L_=__state(); if (L_==nullptr) { return LUAType::NONE; }const auto v__=key.toUtf8(); return getGlobal(L_,v__.constData()); }
-    LUAType getGlobal(const QVariant & key)const { auto L_=__state(); if (L_==nullptr) { return LUAType::NONE; } return _v__getGlobal(L_,key); }
+    template<typename t__T>
+    LUAType getGlobal(const t__T & key)const {auto L_=__state(); if (L_==nullptr) { return LUAType::NONE; }return __GetGlobal<t__T>::getGlobal(L_,value);}
 public:
     static LUAType getTable(const lua_State * const & L_,const int table);
     template<typename KeyType>
     static LUAType getTable(const lua_State * const & L_,const int table,const KeyType &key) { pushKey(L_,key); return getTable(L_,table); }
-    static LUAType getTable(const lua_State * const & L_,const int table,const char *const &key) { pushKey(L_,key); return getTable(L_,table); }
     template<typename SizeType>
     static LUAType getTable(const lua_State * const & L_,const int table,const char *const &key,const SizeType & l) { pushKey(L_,key,static_cast<size_t>(l)); return getTable(L_,table); }
-    template<typename CharType_, size_t NNN>static LUAType getTable(const lua_State * const & L_,const int table,const CharType_(&key)[NNN]) { pushKey(L_,key); return getTable(L_,table); }
+   
 
     LUAType getTable(const int table)const { auto L_=__state(); if (L_==nullptr) { return LUAType::NONE; }return getTable(L_,table); }
     template<typename KeyType>
     LUAType getTable(const int table,const KeyType &key) { auto L_=__state(); if (L_==nullptr) { return LUAType::NONE; } pushKey(L_,key); return getTable(L_,table); }
-    LUAType getTable(const int table,const char *const &key) { auto L_=__state(); if (L_==nullptr) { return LUAType::NONE; }pushKey(L_,key); return getTable(L_,table); }
     template<typename SizeType>
     LUAType getTable(const int table,const char *const &key,const SizeType & l) { auto L_=__state(); if (L_==nullptr) { return LUAType::NONE; } pushKey(L_,key,static_cast<size_t>(l)); return getTable(L_,table); }
-    template<typename CharType_,size_t NNN>LUAType getTable(const int table,const CharType_(&key)[NNN]) { auto L_=__state(); if (L_==nullptr) { return LUAType::NONE; } pushKey(L_,key); return getTable(L_,table); }
+   
 public:
     static void setTable(const lua_State * const & L_,const int table);
     void setTable(const int table) { auto L_=__state(); if (L_==nullptr) { return; }setTable(L_,table); }
@@ -300,10 +357,10 @@ public:
 
 template<typename IT_,typename IU_,typename ValueType  >
 bool PureLuaCore::__setTable(
-        const lua_State * const & L_,int table,
-        IT_ b,IU_ e,
-        const ValueType & v,
-        std::string & errorCode)try {
+    const lua_State * const & L_,int table,
+    IT_ b,IU_ e,
+    const ValueType & v,
+    std::string & errorCode)try {
     table=absIndex(L_,table);
     /*null data*/
     if (b==e) { errorCode="null data"; return false; }
@@ -335,9 +392,9 @@ catch (...) { errorCode="unknow error"; return false; }
 
 template<typename IT_,typename IU_,typename ValueType >
 bool PureLuaCore::__setGlobal(
-        const lua_State * const & L,
-        IT_ b,IU_ e,
-        const ValueType & v,std::string & errorCode) try {
+    const lua_State * const & L,
+    IT_ b,IU_ e,
+    const ValueType & v,std::string & errorCode) try {
     /*null data*/
     if (b==e) { errorCode="null data"; return false; }
     int table=0;
@@ -356,8 +413,8 @@ catch (...) { errorCode="unknow error"; return false; }
 
 template<typename IT_,typename IU_  >
 PureLuaCore::LUAType PureLuaCore::__getTable(
-        const lua_State * const & L_,int table,
-        IT_ b,IU_ e,std::string & errorCode) try {
+    const lua_State * const & L_,int table,
+    IT_ b,IU_ e,std::string & errorCode) try {
     const auto & L=L_;
     table=absIndex(L_,table);
     if (b==e) { errorCode="null data";  pushNIL(L_); return LUAType::NIL; }
