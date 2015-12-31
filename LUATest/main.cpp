@@ -13,6 +13,16 @@ int main(int argc, char *argv[])try{
 
     {
         cct::PureLuaCore core;
+
+        auto * L = core.getLuaState().get();
+
+        const char v[4]="123";
+        const char * vxx="123";
+        core.pushValue(vxx);
+        core.pushValue(v);
+        cct::PureLuaCore::pushValue(L,v);
+        core.setTop();
+
         core.setGlobals({ "aa","bb",12 },33.2);
         core.getGlobals({ "aa","bb",12 });
 
