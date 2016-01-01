@@ -13,6 +13,45 @@ int main(int argc, char *argv[])try{
 
     {
         cct::PureLuaCore core;
+        auto lock=core.getStateLock();
+        core.doString("xx = 1+2");
+        core.getGlobal("xx");
+        qDebug()<<core.toQVariant();
+    }
+
+    {
+        cct::PureLuaCore core;
+        {
+            auto lock=core.getStateLock();
+            core.doString("xx=1+2");
+            qDebug()<<"with out return"<<core.getTop();
+        }
+        core.doString("return 1+2");
+        qDebug()<<"with return"<<core.getTop();
+    }
+
+    {
+        cct::PureLuaCore core;
+        auto lock=core.getStateLock();
+        if (core.doString("xx = 1..+..2")) {
+        }
+        else {
+            qDebug()<<core.toQVariant();
+        }
+    }
+
+    {
+        cct::PureLuaCore core;
+        core.doString("xx = function() return a.f end");
+        if ( core.doString(" xx() ") ) {
+        }
+        else {
+            qDebug()<<core.getErrorQString();
+        }
+    }
+
+    {
+        cct::PureLuaCore core;
 
         auto * L = core.getLuaState().get();
 

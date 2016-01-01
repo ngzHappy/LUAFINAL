@@ -5,6 +5,13 @@
 namespace cct {
 class QLUACORESHARED_EXPORT PureLuaCore {
 public:
+    enum class LUAState : int {
+        OK=LUA_OK ,//: success.
+        ERRRUN=LUA_ERRRUN,//: a runtime error.
+        ERRMEM=LUA_ERRMEM,//: memory allocation error. For such errors, Lua does not call the message handler.
+        ERRERR=LUA_ERRERR,//: error while running the message handler.
+        ERRGCMM=LUA_ERRGCMM,//: error while running a __gc metamethod. (This error typically has no relation with the function being called.)
+    };
     enum class LUAType : int {
         NONE=LUA_TNONE,
         NIL=LUA_TNIL,
@@ -71,6 +78,18 @@ protected:
     static LUAType _v__getGlobal(const lua_State * const & L_,const QVariant&);
 
     lua_State * __state()const;
+
+    static bool __call(const lua_State * const & L_,int inputNum,int outPutNum,int messageHandle);
+    static bool __call(const lua_State * const & L_,int inputNum,int outPutNum);
+
+    static bool __loadString(const lua_State * const & L_,const char * const &);
+    static bool __loadString(const lua_State * const & L_,const char * const & _data_,size_t) { return __loadString(L_,_data_); }
+
+    static bool __doString(const lua_State * const & L_,const char * program,size_t l);
+    static bool __doString(const lua_State * const & L_,const char * program);
+    static bool _v_doString(const lua_State * const & L_,const QVariant & program);
+
+    std::string __toError(const lua_State * const & L_,int index = -1)const;
 private:
 
     template<typename T,unsigned int N = __StringCallIndex<T>::value >
@@ -164,6 +183,8 @@ public:
     PureLuaCore(PureLuaCore &&)=default;
     ~PureLuaCore();
 
+    lua_State * getStatePointer()const { return __state(); }
+
 public:
 
     template<typename SizeType>
@@ -178,14 +199,14 @@ public:
 
 public:
     template<typename Size_Type_> 
-    void pushKey(const char * const & value,Size_Type_ l) { auto L_=__state(); if (L_==nullptr) { return; } pushKey(L_,value,static_cast<size_t>(l) ); }
+    void pushKey(const char * const & value,Size_Type_ l) { auto L_=__state(); if (L_==nullptr) {setError("null lua"); return; } pushKey(L_,value,static_cast<size_t>(l) ); }
     template<typename t__T>
-    void pushKey(const t__T &value) { auto L_=__state(); if (L_==nullptr) { return; } pushKey(L_,value); }
+    void pushKey(const t__T &value) { auto L_=__state(); if (L_==nullptr) { setError("null lua");return; } pushKey(L_,value); }
 
     template<typename Size_Type_>
-    void pushValue(const char * const & value,Size_Type_ l) { auto L_=__state(); if (L_==nullptr) { return; } __pushKey(L_,value,static_cast<size_t>(l)); }
+    void pushValue(const char * const & value,Size_Type_ l) { auto L_=__state(); if (L_==nullptr) { setError("null lua");return; } __pushKey(L_,value,static_cast<size_t>(l)); }
     template<typename t__T> 
-    void pushValue(const t__T & v) { auto L_=__state(); if (L_==nullptr) { return; }pushValue(L_,v); }
+    void pushValue(const t__T & v) { auto L_=__state(); if (L_==nullptr) {setError("null lua"); return; }pushValue(L_,v); }
 public:
     template<typename Size_Type_>
     static void setGlobal(const lua_State * const & L_,const char * const& name,Size_Type_ ) { __setglobal(L_,name); }
@@ -193,9 +214,9 @@ public:
     static void setGlobal(const lua_State * const & L_,const t__T & value) { __SetGlobal<t__T>::setGlobal(L_,value); }
 
     template<typename Size_Type_>
-    void setGlobal(const char * const& name,Size_Type_ ) { auto L_=__state(); if (L_==nullptr) { return; }  __setglobal(L_,name); }
+    void setGlobal(const char * const& name,Size_Type_ ) { auto L_=__state(); if (L_==nullptr) { setError("null lua");return; }  __setglobal(L_,name); }
     template<typename t__T>
-    static void setGlobal(const t__T & value) { auto L_=__state(); if (L_==nullptr) { return; } __SetGlobal<t__T>::setGlobal(L_,value); }
+    void setGlobal(const t__T & value) { auto L_=__state(); if (L_==nullptr) { setError("null lua");return; } __SetGlobal<t__T>::setGlobal(L_,value); }
 
 public:
     template<typename NameType,typename ValueType>
@@ -207,12 +228,12 @@ public:
     static void setGlobalValue(const lua_State * const & L_,const char * const & key,size_t,const char * const & value,size_t l) { pushValue(L_,value,l); setGlobal(L_,key); }
 
     template<typename NameType,typename ValueType>
-    void setGlobalValue(const NameType & key,const ValueType & value) { auto L_=__state(); if (L_==nullptr) { return; }setGlobalValue(L_,key,value); }
+    void setGlobalValue(const NameType & key,const ValueType & value) { auto L_=__state(); if (L_==nullptr) {setError("null lua"); return; }setGlobalValue(L_,key,value); }
     template<typename ValueType>
-    void setGlobalValue(const char * const & key,size_t,const ValueType & value) { auto L_=__state(); if (L_==nullptr) { return; }setGlobalValue(L_,key,value); }
+    void setGlobalValue(const char * const & key,size_t,const ValueType & value) { auto L_=__state(); if (L_==nullptr) {setError("null lua"); return; }setGlobalValue(L_,key,value); }
     template<typename NameType>
-    void setGlobalValue(const NameType & key,const char * const & value,size_t l) { auto L_=__state(); if (L_==nullptr) { return; }setGlobalValue(L_,key,value,l); }
-    void setGlobalValue(const char * const & key,size_t,const char * const & value,size_t l) { auto L_=__state(); if (L_==nullptr) { return; }setGlobalValue(L_,key,value,l); }
+    void setGlobalValue(const NameType & key,const char * const & value,size_t l) { auto L_=__state(); if (L_==nullptr) {setError("null lua"); return; }setGlobalValue(L_,key,value,l); }
+    void setGlobalValue(const char * const & key,size_t,const char * const & value,size_t l) { auto L_=__state(); if (L_==nullptr) {setError("null lua"); return; }setGlobalValue(L_,key,value,l); }
 public:
     template<typename  SizeType>
     static LUAType getGlobal(const lua_State * const & L_,const char * const & key,SizeType ) { return ___getGlobal(L_,key); }
@@ -220,9 +241,9 @@ public:
     static LUAType getGlobal(const lua_State * const & L_,const t__T & value) { return __GetGlobal<t__T>::getGlobal(L_,value); }
    
     template<typename  SizeType>
-    LUAType getGlobal(const char * const & key,SizeType )const { auto L_=__state(); if (L_==nullptr) { return LUAType::NONE; }return ___getGlobal(L_,key); }
+    LUAType getGlobal(const char * const & key,SizeType )const { auto L_=__state(); if (L_==nullptr) {setError("null lua"); return LUAType::NONE; }return ___getGlobal(L_,key); }
     template<typename t__T>
-    LUAType getGlobal(const t__T & key)const {auto L_=__state(); if (L_==nullptr) { return LUAType::NONE; }return __GetGlobal<t__T>::getGlobal(L_,value);}
+    LUAType getGlobal(const t__T & key)const {auto L_=__state(); if (L_==nullptr) {setError("null lua"); return LUAType::NONE; }return __GetGlobal<t__T>::getGlobal(L_,key);}
 public:
     static LUAType getTable(const lua_State * const & L_,const int table);
     template<typename KeyType>
@@ -230,11 +251,11 @@ public:
     template<typename SizeType>
     static LUAType getTable(const lua_State * const & L_,const int table,const char *const &key,const SizeType & l) { pushKey(L_,key,static_cast<size_t>(l)); return getTable(L_,table); }
    
-    LUAType getTable(const int table)const { auto L_=__state(); if (L_==nullptr) { return LUAType::NONE; }return getTable(L_,table); }
+    LUAType getTable(const int table)const { auto L_=__state(); if (L_==nullptr) { setError("null lua");return LUAType::NONE; }return getTable(L_,table); }
     template<typename KeyType>
-    LUAType getTable(const int table,const KeyType &key) { auto L_=__state(); if (L_==nullptr) { return LUAType::NONE; } pushKey(L_,key); return getTable(L_,table); }
+    LUAType getTable(const int table,const KeyType &key) { auto L_=__state(); if (L_==nullptr) { setError("null lua");return LUAType::NONE; } pushKey(L_,key); return getTable(L_,table); }
     template<typename SizeType>
-    LUAType getTable(const int table,const char *const &key,const SizeType & l) { auto L_=__state(); if (L_==nullptr) { return LUAType::NONE; } pushKey(L_,key,static_cast<size_t>(l)); return getTable(L_,table); }
+    LUAType getTable(const int table,const char *const &key,const SizeType & l) { auto L_=__state(); if (L_==nullptr) { setError("null lua");return LUAType::NONE; } pushKey(L_,key,static_cast<size_t>(l)); return getTable(L_,table); }
    
 public:
     static void setTable(const lua_State * const & L_,const int table);
@@ -249,18 +270,36 @@ public:
     static void setTableValue(const lua_State * const & L_,const int table,const char * & key,const size_t kl,const char * const & value,const size_t vl) { pushKey(L_,key,kl); pushValue(L_,value,vl); setTable(L_,table); }
 
     template<typename KeyType,typename ValueType>
-    void setTableValue(const int table,const KeyType & key,const ValueType & value) {auto L_=__state(); if (L_==nullptr) { return; } pushKey(L_,key); pushValue(L_,value); setTable(L_,table); }
+    void setTableValue(const int table,const KeyType & key,const ValueType & value) {auto L_=__state(); if (L_==nullptr) { setError("null lua");return; } pushKey(L_,key); pushValue(L_,value); setTable(L_,table); }
     template<typename ValueType>
-    void setTableValue(const int table,const char * const & key,const size_t l,const ValueType & value) {auto L_=__state(); if (L_==nullptr) { return; } pushKey(L_,key,l); pushValue(L_,value); setTable(L_,table); }
+    void setTableValue(const int table,const char * const & key,const size_t l,const ValueType & value) {auto L_=__state(); if (L_==nullptr) { setError("null lua");return; } pushKey(L_,key,l); pushValue(L_,value); setTable(L_,table); }
     template<typename KeyType>
-    void setTableValue(const int table,const KeyType & key,const char * const & value,const size_t l) {auto L_=__state(); if (L_==nullptr) { return; } pushKey(L_,key); pushValue(L_,value,l); setTable(L_,table); }
-    void setTableValue(const int table,const char * & key,const size_t kl,const char * const & value,const size_t vl) {auto L_=__state(); if (L_==nullptr) { return; } pushKey(L_,key,kl); pushValue(L_,value,vl); setTable(L_,table); }
+    void setTableValue(const int table,const KeyType & key,const char * const & value,const size_t l) {auto L_=__state(); if (L_==nullptr) {setError("null lua"); return; } pushKey(L_,key); pushValue(L_,value,l); setTable(L_,table); }
+    void setTableValue(const int table,const char * & key,const size_t kl,const char * const & value,const size_t vl) {auto L_=__state(); if (L_==nullptr) {setError("null lua"); return; } pushKey(L_,key,kl); pushValue(L_,value,vl); setTable(L_,table); }
+public:
+    
+    template<typename CharType ,size_t N=0>
+    static bool doString(const lua_State * const & L_,const CharType * const & program) { return __doString(L_,program); }
+    template<typename CharType,size_t N>
+    static bool doString(const lua_State * const & L_,const CharType(&program)[N]) { return __doString(L_,program,N-1); }
+    template<typename SizeType_>
+    static bool doString(const lua_State * const & L_,const char * const &program,SizeType_ l) { return __doString(L_,program, static_cast<size_t>(l));}
+    static bool doString(const lua_State * const & L_,const std::string & program) { return __doString(L_,program.c_str(),static_cast<size_t>(program.size())); }
+    static bool doString(const lua_State * const & L_,const QString & program) { const auto program_=program.toUtf8(); return __doString(L_,program_.constData(),static_cast<size_t>(program_.size())); }
+    static bool doString(const lua_State * const & L_,const QByteArray & program) { return __doString(L_,program.constData(),static_cast<size_t>(program.size())); }
+    static bool doString(const lua_State * const & L_,const QVariant & program) { return _v_doString(L_,program); }
+
+    template<typename SizeType_>
+    bool doString(const char * const & program,SizeType_ l) { const auto * & L_=__state(); if (nullptr==L_) {setError("null lua"); return false; }return doString(L_,program,l); if (false==ans__) { setError(__toError(L_)); }return ans__;}
+    template<typename ProgramType_>
+    bool doString(const ProgramType_ & program) { const auto L_=__state(); if (nullptr==L_) { setError("null lua"); return false; }auto ans__=doString(L_,program); if (false==ans__) { setError(__toError(L_)); }return ans__; }
 
 public:
     std::shared_ptr<lua_State> getLuaState()const;
     void setLuaState(std::shared_ptr<lua_State>);
 
     const std::string & getError()const;
+    QString getErrorQString()const { const auto & e=getError(); return QString::fromUtf8(e.c_str(),e.size()); }
     void clearError();
 
     LUAType type(int) const;
@@ -351,7 +390,15 @@ public:
     public:
         StateLock(const lua_State * const & L_):L(const_cast<lua_State * const &>(L_)) { if (L) { n=getTop(L); } }
         ~StateLock() { if (L) { setTop(L,n); } }
+        StateLock(StateLock && o):L(o.L),n(o.n) { o.L=nullptr; }
+        //StateLock&operator=(StateLock && o) { if (this==&o) { return *this; }L=o.L; n=o.n; o.L=nullptr; return *this; }
+        StateLock(const StateLock &)=delete;
+        StateLock&operator=(const StateLock &)=delete;
+        StateLock&operator=(StateLock &&)=delete;
     };
+
+    StateLock getStateLock() const { return StateLock( __state() ); }
+
 };
 
 template<typename IT_,typename IU_,typename ValueType  >

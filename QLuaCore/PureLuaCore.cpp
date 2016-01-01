@@ -117,8 +117,8 @@ QVariant PureLuaCore::toQVariant(const lua_State * const &L_,int n) {
     auto & L=const_cast<lua_State * const &>(L_);
     LUAType type_=type(L_,n);
     switch (type_) {
-    case PureLuaCore::LUAType::NONE:break;
-    case PureLuaCore::LUAType::NIL:break;
+        case PureLuaCore::LUAType::NONE:return QVariant(); break;
+    case PureLuaCore::LUAType::NIL:return QVariant(); break;
     case PureLuaCore::LUAType::BOOLEAN:return QVariant(static_cast<bool>(lua_toboolean(L,n))); break;
     case PureLuaCore::LUAType::LIGHTUSERDATA:break;
     case PureLuaCore::LUAType::NUMBER:
@@ -126,7 +126,7 @@ QVariant PureLuaCore::toQVariant(const lua_State * const &L_,int n) {
         else { return QVariant(lua_tonumber(L,n)); }
         break;
     case PureLuaCore::LUAType::STRING: {
-        size_t n_; const char * data_=lua_tolstring(L,n,&n_); return QString::fromUtf8(data_,n_);
+        size_t n_=0; const char * data_=lua_tolstring(L,n,&n_); return QString::fromUtf8(data_,n_);
     }break;
     case PureLuaCore::LUAType::TABLE:break;
     case PureLuaCore::LUAType::FUNCTION: {
@@ -136,6 +136,13 @@ QVariant PureLuaCore::toQVariant(const lua_State * const &L_,int n) {
     case PureLuaCore::LUAType::THREAD:break;
     default:return QVariant(); break;
     }
+
+    {
+        size_t n_=0;
+        const char * ans_=luaL_tolstring(L,n,&n_);
+        if ((n_>0)&&ans_) { return QVariant(QString::fromUtf8(ans_,n_)); }
+    }      
+
     return QVariant();
 }
 
@@ -246,6 +253,62 @@ namespace cct {
 void PureLuaCore::setTable(const lua_State * const & L_,const int table) {
     auto & L=const_cast<lua_State * const &>(L_);
     return lua_settable(L,table);
+}
+}
+
+namespace cct {
+
+bool PureLuaCore::__doString(const lua_State * const & L_,const char * program,size_t ) { 
+    return __doString(L_,program);
+}
+
+bool PureLuaCore::__doString(const lua_State * const & L_,const char * program) { 
+    auto ans=__loadString(L_,program); 
+    if (ans) {ans=__call(L_,0,LUA_MULTRET);}
+    return ans;
+}
+
+bool PureLuaCore::_v_doString(const lua_State * const & L_,const QVariant & program) {
+    const auto ut=program.userType();
+    if (program.isValid()==false) { return false; }
+    switch (ut) {
+        case QVariant::String: return doString(L_,program.toString()); break;
+        case QVariant::ByteArray:return doString(L_,program.toByteArray()); break;
+    }
+    if (program.canConvert( qMetaTypeId<QString>() )) { return doString(L_,program.toString());}
+    if (program.canConvert(qMetaTypeId<QByteArray>())) { return doString(L_,program.toByteArray()); }
+    return false;
+}
+}
+
+namespace cct {
+bool PureLuaCore::__call(const lua_State * const & L_,int inputNum,int outPutNum,int messageHandle) {
+    auto & L=const_cast<lua_State * const &>(L_);
+    const auto call_state_ = static_cast<LUAState>( lua_pcall(L,inputNum,outPutNum,messageHandle) );
+    return call_state_ == LUAState::OK;
+}
+bool PureLuaCore::__call(const lua_State * const & L_,int inputNum,int outPutNum) {
+    return __call(L_,inputNum,outPutNum,0);
+}
+}
+
+namespace cct {
+bool PureLuaCore::__loadString(const lua_State * const & L_,const char * const &_data_ ) {
+    auto & L=const_cast<lua_State * const &>(L_);
+    const auto ans_state_ = static_cast<LUAState>( luaL_loadstring(L,_data_) );
+    return ans_state_ == LUAState::OK;
+}
+}
+
+namespace cct {
+std::string  PureLuaCore::__toError(const lua_State * const & L_,int index) const{
+    auto & L=const_cast<lua_State * const &>(L_);
+    index=lua_absindex(L,index);
+    if ((lua_gettop(L)<index)) { return std::string{}; }
+    size_t n_=0; const char * ans_=nullptr;
+    ans_=luaL_tolstring(L,index,&n_);
+    if ((n_>0)&&ans_) { return std::string(ans_,n_); }
+    return std::string{};
 }
 }
 
