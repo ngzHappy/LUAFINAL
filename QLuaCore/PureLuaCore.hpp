@@ -104,7 +104,7 @@ private:
 
     template<typename T >
     class __PublishKey<T,1> {public:/*1*/
-        template<typename CharType_,size_t NNN> 
+        template<typename CharType_,size_t NNN>
         static void pushKey(const lua_State * const & L_,const  CharType_(&value)[NNN]) { __pushKey(L_,value,static_cast<size_t>(NNN-1)); }
     };
 
@@ -127,12 +127,12 @@ private:
 
     template<typename T>
     class __PushValue<T,1> {public:/*1*/
-        template<typename CharType_,size_t NNN> 
+        template<typename CharType_,size_t NNN>
         static void pushValue(const lua_State * const & L_,const CharType_(&value)[NNN]) { __pushKey(L_,value,static_cast<size_t>(NNN-1)); }
     };
 
     template<typename T>
-    class __PushValue<T,2> { public:/*2*/ 
+    class __PushValue<T,2> { public:/*2*/
         static void pushValue(const lua_State * const & L_,const char * const & value) { __pushKey(L_,value); }
     };
 
@@ -146,7 +146,7 @@ private:
 
     template<typename T>
     class __SetGlobal<T,1> { public:/*1*/
-        template<typename CharType_,size_t NNN> 
+        template<typename CharType_,size_t NNN>
         static void setGlobal(const lua_State * const & L_,const CharType_(&name)[NNN]) { __setglobal(L_,name); }
     };
 
@@ -198,14 +198,14 @@ public:
     static void pushValue(const lua_State * const & L_,const t__T &value) { __PushValue<t__T>::pushValue(L_,value); }
 
 public:
-    template<typename Size_Type_> 
+    template<typename Size_Type_>
     void pushKey(const char * const & value,Size_Type_ l) { auto L_=__state(); if (L_==nullptr) {setError("null lua"); return; } pushKey(L_,value,static_cast<size_t>(l) ); }
     template<typename t__T>
     void pushKey(const t__T &value) { auto L_=__state(); if (L_==nullptr) { setError("null lua");return; } pushKey(L_,value); }
 
     template<typename Size_Type_>
     void pushValue(const char * const & value,Size_Type_ l) { auto L_=__state(); if (L_==nullptr) { setError("null lua");return; } __pushKey(L_,value,static_cast<size_t>(l)); }
-    template<typename t__T> 
+    template<typename t__T>
     void pushValue(const t__T & v) { auto L_=__state(); if (L_==nullptr) {setError("null lua"); return; }pushValue(L_,v); }
 public:
     template<typename Size_Type_>
@@ -239,7 +239,7 @@ public:
     static LUAType getGlobal(const lua_State * const & L_,const char * const & key,SizeType ) { return ___getGlobal(L_,key); }
     template<typename t__T>
     static LUAType getGlobal(const lua_State * const & L_,const t__T & value) { return __GetGlobal<t__T>::getGlobal(L_,value); }
-   
+
     template<typename  SizeType>
     LUAType getGlobal(const char * const & key,SizeType )const { auto L_=__state(); if (L_==nullptr) {setError("null lua"); return LUAType::NONE; }return ___getGlobal(L_,key); }
     template<typename t__T>
@@ -250,13 +250,13 @@ public:
     static LUAType getTable(const lua_State * const & L_,const int table,const KeyType &key) { pushKey(L_,key); return getTable(L_,table); }
     template<typename SizeType>
     static LUAType getTable(const lua_State * const & L_,const int table,const char *const &key,const SizeType & l) { pushKey(L_,key,static_cast<size_t>(l)); return getTable(L_,table); }
-   
+
     LUAType getTable(const int table)const { auto L_=__state(); if (L_==nullptr) { setError("null lua");return LUAType::NONE; }return getTable(L_,table); }
     template<typename KeyType>
     LUAType getTable(const int table,const KeyType &key) { auto L_=__state(); if (L_==nullptr) { setError("null lua");return LUAType::NONE; } pushKey(L_,key); return getTable(L_,table); }
     template<typename SizeType>
     LUAType getTable(const int table,const char *const &key,const SizeType & l) { auto L_=__state(); if (L_==nullptr) { setError("null lua");return LUAType::NONE; } pushKey(L_,key,static_cast<size_t>(l)); return getTable(L_,table); }
-   
+
 public:
     static void setTable(const lua_State * const & L_,const int table);
     void setTable(const int table) { auto L_=__state(); if (L_==nullptr) { return; }setTable(L_,table); }
@@ -277,7 +277,7 @@ public:
     void setTableValue(const int table,const KeyType & key,const char * const & value,const size_t l) {auto L_=__state(); if (L_==nullptr) {setError("null lua"); return; } pushKey(L_,key); pushValue(L_,value,l); setTable(L_,table); }
     void setTableValue(const int table,const char * & key,const size_t kl,const char * const & value,const size_t vl) {auto L_=__state(); if (L_==nullptr) {setError("null lua"); return; } pushKey(L_,key,kl); pushValue(L_,value,vl); setTable(L_,table); }
 public:
-    
+
     template<typename CharType ,size_t N=0>
     static bool doString(const lua_State * const & L_,const CharType * const & program) { return __doString(L_,program); }
     template<typename CharType,size_t N>
@@ -290,7 +290,7 @@ public:
     static bool doString(const lua_State * const & L_,const QVariant & program) { return _v_doString(L_,program); }
 
     template<typename SizeType_>
-    bool doString(const char * const & program,SizeType_ l) { const auto * & L_=__state(); if (nullptr==L_) {setError("null lua"); return false; }return doString(L_,program,l); if (false==ans__) { setError(__toError(L_)); }return ans__;}
+    bool doString(const char * const & program,SizeType_ l) { const auto * & L_=__state(); if (nullptr==L_) {setError("null lua"); return false; }auto ans__= doString(L_,program,l); if (false==ans__) { setError(__toError(L_)); }return ans__;}
     template<typename ProgramType_>
     bool doString(const ProgramType_ & program) { const auto L_=__state(); if (nullptr==L_) { setError("null lua"); return false; }auto ans__=doString(L_,program); if (false==ans__) { setError(__toError(L_)); }return ans__; }
 
