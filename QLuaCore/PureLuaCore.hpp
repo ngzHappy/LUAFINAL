@@ -406,7 +406,7 @@ public:
     template<typename BeginType,typename EndType,typename ValueType>
     static bool setGlobals(const lua_State * L, BeginType b,EndType e,const ValueType & v,std::string & errorS) {return __setGlobal(L,b,e,v,errorS);}
     template<typename BeginType,typename EndType,typename ValueType>
-    static bool setTables(const lua_State * L,const int table,BeginType b,EndType e,const ValueType & v,std::string & errorS) { return __setTable(L,t,b,e,v,errorS); }
+    static bool setTables(const lua_State * L,const int table,BeginType b,EndType e,const ValueType & v,std::string & errorS) { return __setTable(L,table,b,e,v,errorS); }
     template<typename BeginType,typename EndType>
     static LUAType getGlobals(const lua_State * L,BeginType b,EndType e ,std::string & errorS) { return __getGlobal(L,b,e,errorS); }
     template<typename BeginType,typename EndType>
@@ -539,7 +539,7 @@ namespace lua {
 inline int add_state_count(const lua_State * const & L) { return lua_add_state_counter( const_cast<lua_State * const & >( L)); }
 inline int sub_state_count(const lua_State * const & L) { return lua_sub_state_counter( const_cast<lua_State * const & >( L)); }
 inline std::shared_ptr<lua_State> makeLUAStateSharedPointer(const lua_State * const & L_) { lua_State * const & L = const_cast<lua_State * const &>(L_);lua_add_state_counter(L);return std::shared_ptr<lua_State>(L,[](lua_State * _L_) {if (lua_sub_state_counter(_L_)) { return; }lua_close(_L_);});}
-inline int absIndex(const lua_State * const & L,int i) { cct::PureLuaCore::absIndex(L,i); }
+inline int absIndex(const lua_State * const & L,int i) {return cct::PureLuaCore::absIndex(L,i); }
 inline void push(const lua_State * const & L,int n) { return cct::PureLuaCore::push(L,n); }
 inline void push(const lua_State * const & L) { return cct::PureLuaCore::push(L); }
 inline void pushNIL(const lua_State * const & L) { return cct::PureLuaCore::pushNIL(L); }
@@ -563,7 +563,7 @@ template<typename ... Args>void setGlobal(const lua_State * const & L,Args && ..
 template<typename ... Args>void setTableValue(const lua_State * const & L,Args && ... args) { return cct::PureLuaCore::setTableValue(L,std::forward<Args>(args)...); }
 template<typename ... Args>void setGlobalValue(const lua_State * const & L,Args && ... args) { return cct::PureLuaCore::setGlobalValue(L,std::forward<Args>(args)...); }
 template<typename BeginType,typename EndType,typename ValueType>bool setGlobals(const lua_State * L, BeginType b,EndType e,const ValueType & v,std::string & errorS) {return cct::PureLuaCore::setGlobals(L,b,e,v,errorS);}
-template<typename BeginType,typename EndType,typename ValueType>bool setTables(const lua_State * L,const int table,BeginType b,EndType e,const ValueType & v,std::string & errorS) { return cct::PureLuaCore::setTables(L,t,b,e,v,errorS); }
+template<typename BeginType,typename EndType,typename ValueType>bool setTables(const lua_State * L,const int table,BeginType b,EndType e,const ValueType & v,std::string & errorS) { return cct::PureLuaCore::setTables(L,table,b,e,v,errorS); }
 template<typename BeginType,typename EndType>cct::PureLuaCore::LUAType getGlobals(const lua_State * L,BeginType b,EndType e ,std::string & errorS) { return cct::PureLuaCore::getGlobals(L,b,e,errorS); }
 template<typename BeginType,typename EndType>cct::PureLuaCore::LUAType getTables(const lua_State * L,const int table,BeginType b,EndType e,std::string & errorS) { return cct::PureLuaCore::getTables(L,table,b,e,errorS); }
 }
