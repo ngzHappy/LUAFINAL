@@ -97,8 +97,14 @@ private:
         static void pushKey(const lua_State * const & L_,const std::string & value) { __pushKey(L_,value.c_str(),static_cast<size_t>(value.size())); }
         static void pushKey(const lua_State * const & L_,const QByteArray & value) { __pushKey(L_,value.constData(),static_cast<size_t>(value.size())); }
         static void pushKey(const lua_State * const & L_,const QString & value_) { const auto value=value_.toUtf8(); __pushKey(L_,value.constData(),static_cast<size_t>(value.size())); }
-        static void pushKey(const lua_State * const & L_,const lua_Integer value) { _i_pushKey(L_,value); }
-        static void pushKey(const lua_State * const & L_,const lua_Number value) { _i_pushKey(L_,static_cast<lua_Integer>(value)); }
+        static void pushKey(const lua_State * const & L_,const int value) { _i_pushKey(L_,static_cast<lua_Integer>(value)); }
+        static void pushKey(const lua_State * const & L_,const unsigned int value) { _i_pushKey(L_,static_cast<lua_Integer>(value)); }
+        static void pushKey(const lua_State * const & L_,const long value) { _i_pushKey(L_,static_cast<lua_Integer>(value)); }
+        static void pushKey(const lua_State * const & L_,const unsigned long value) { _i_pushKey(L_,static_cast<lua_Integer>(value)); }
+        static void pushKey(const lua_State * const & L_,const long long value) { _i_pushKey(L_,static_cast<lua_Integer>(value)); }
+        static void pushKey(const lua_State * const & L_,const unsigned long long value) { _i_pushKey(L_,static_cast<lua_Integer>(value)); }
+        static void pushKey(const lua_State * const & L_,const double value) { _i_pushKey(L_,static_cast<lua_Integer>(value)); }
+        static void pushKey(const lua_State * const & L_,const float value) { _i_pushKey(L_,static_cast<lua_Integer>(value)); }
         static void pushKey(const lua_State * const & L_,const QVariant &value) { _v_pushKey(L_,value); }
     };
 
@@ -118,8 +124,14 @@ private:
         static void pushValue(const lua_State * const & L_,const std::string & value) { __pushKey(L_,value.c_str(),static_cast<size_t>(value.size())); }
         static void pushValue(const lua_State * const & L_,const QByteArray & value) { __pushKey(L_,value.constData(),static_cast<size_t>(value.size())); }
         static void pushValue(const lua_State * const & L_,const QString & value_) { const auto value=value_.toUtf8(); __pushKey(L_,value.constData(),static_cast<size_t>(value.size())); }
-        static void pushValue(const lua_State * const & L_,const lua_Integer value) { _i_pushKey(L_,value); }
-        static void pushValue(const lua_State * const & L_,const lua_Number value) { _n_pushValue(L_,value); }
+        static void pushValue(const lua_State * const & L_,const unsigned int value) { _i_pushKey(L_,static_cast<lua_Integer>(value)); }
+        static void pushValue(const lua_State * const & L_,const unsigned long value) { _i_pushKey(L_,static_cast<lua_Integer>(value)); }
+        static void pushValue(const lua_State * const & L_,const unsigned long long value) { _i_pushKey(L_,static_cast<lua_Integer>(value)); }
+        static void pushValue(const lua_State * const & L_,const long value) { _i_pushKey(L_,static_cast<lua_Integer>(value)); }
+        static void pushValue(const lua_State * const & L_,const long long value) { _i_pushKey(L_,static_cast<lua_Integer>(value)); }
+        static void pushValue(const lua_State * const & L_,const int value) { _i_pushKey(L_,static_cast<lua_Integer>(value)); }
+        static void pushValue(const lua_State * const & L_,const double value) { _n_pushValue(L_, static_cast<lua_Number>(value) ); }
+        static void pushValue(const lua_State * const & L_,const float value) { _n_pushValue(L_, static_cast<lua_Number>(value) ); }
         static void pushValue(const lua_State * const & L_,const bool value) { _b_pushValue(L_,value); }
         static void pushValue(const lua_State * const & L_,lua_CFunction value) { _f_pushValue(L_,value); }
         static void pushValue(const lua_State * const & L_,const QVariant &value) { _v_pushValue(L_,value); }
@@ -299,6 +311,7 @@ public:
     void setLuaState(std::shared_ptr<lua_State>);
 
     const std::string & getError()const;
+    std::string & getError();
     QString getErrorQString()const { const auto & e=getError(); return QString::fromUtf8(e.c_str(),e.size()); }
     void clearError();
 
@@ -313,6 +326,9 @@ public:
 
     int getTop() const;
     void setTop(int v=0);
+
+    static bool call(const lua_State * const &L_,int inum,int onum=LUA_MULTRET,int errorFunction=0) { return PureLuaCore::__call(L_,inum,onum,errorFunction); }
+    bool call(int inum,int onum=LUA_MULTRET,int errorFunction=0) { auto * L=__state(); if (L) { auto ans=call(L,inum,onum,errorFunction); if (false==ans) { setError(__toError(L)); } return ans; } setError("null lua"); return false; }
 
     static void newTable(const lua_State * const &L_);
     void newTable();
@@ -337,6 +353,9 @@ public:
 
     static void copy(const lua_State * const &L_,int from,int to);
     void copy(int from,int to);
+    /* shift (+/-)n value form form_index to top */
+    static void rotate(const lua_State * const &L_,const int from_index,const int n);
+    void rotate(const int f,const int n) { auto * L=this->__state(); if (L==nullptr) { setError("null lua"); return; }rotate(L,f,n); }
 
     template<typename t__BI,typename t__EI,typename t__V>
     bool setTables(int table,t__BI b,t__EI e,const t__V & v) {
@@ -384,6 +403,14 @@ public:
     template<typename t__U,typename t__V>bool setTables(int table,const t__U & keys,const t__V & v) { return setTables(table,keys.begin(),keys.end(),v); }
     template<typename t__U,typename t__V>bool setGlobals(const t__U & keys,const t__V & v) { return setGlobals(keys.begin(),keys.end(),v); }
 
+    template<typename BeginType,typename EndType,typename ValueType>
+    static bool setGlobals(const lua_State * L, BeginType b,EndType e,const ValueType & v,std::string & errorS) {return __setGlobal(L,b,e,v,errorS);}
+    template<typename BeginType,typename EndType,typename ValueType>
+    static bool setTables(const lua_State * L,const int table,BeginType b,EndType e,const ValueType & v,std::string & errorS) { return __setTable(L,t,b,e,v,errorS); }
+    template<typename BeginType,typename EndType>
+    static LUAType getGlobals(const lua_State * L,BeginType b,EndType e ,std::string & errorS) { return __getGlobal(L,b,e,errorS); }
+    template<typename BeginType,typename EndType>
+    static LUAType getTables(const lua_State * L,const int table,BeginType b,EndType e,std::string & errorS) { return __getTable(L,table,b,e,errorS); }
 public:
     class StateLock {
         lua_State * L; int n;
@@ -506,6 +533,41 @@ catch (std::string & xerr) { errorCode=xerr; return LUAType::NIL; }
 catch (...) { errorCode="unknow error"; return LUAType::NIL; }
 
 }/*cct*/
+
+namespace cct {
+namespace lua {
+inline int add_state_count(const lua_State * const & L) { return lua_add_state_counter( const_cast<lua_State * const & >( L)); }
+inline int sub_state_count(const lua_State * const & L) { return lua_sub_state_counter( const_cast<lua_State * const & >( L)); }
+inline std::shared_ptr<lua_State> makeLUAStateSharedPointer(const lua_State * const & L_) { lua_State * const & L = const_cast<lua_State * const &>(L_);lua_add_state_counter(L);return std::shared_ptr<lua_State>(L,[](lua_State * _L_) {if (lua_sub_state_counter(_L_)) { return; }lua_close(_L_);});}
+inline int absIndex(const lua_State * const & L,int i) { cct::PureLuaCore::absIndex(L,i); }
+inline void push(const lua_State * const & L,int n) { return cct::PureLuaCore::push(L,n); }
+inline void push(const lua_State * const & L) { return cct::PureLuaCore::push(L); }
+inline void pushNIL(const lua_State * const & L) { return cct::PureLuaCore::pushNIL(L); }
+inline void pop(const lua_State * const & L) { return cct::PureLuaCore::pop(L); }
+inline void copy(const lua_State * const & L,int from,int to) { return cct::PureLuaCore::copy(L,from,to); }
+inline void rotate(const lua_State * const & L,int f,int n) { cct::PureLuaCore::rotate(L,f,n); }
+inline int getTop(const lua_State * const & L) { return cct::PureLuaCore::getTop(L); }
+inline void setTop(const lua_State *const & L,int n) { return cct::PureLuaCore::setTop(L,n); }
+inline void setTop(const lua_State *const & L) { return cct::PureLuaCore::setTop(L,0); }
+inline void newTable(const lua_State *const & L) { return cct::PureLuaCore::newTable(L); }
+inline QVariant toQVariant(const lua_State * const & L,int index) { return cct::PureLuaCore::toQVariant(L,index); }
+inline QVariant toQVariant(const lua_State * const & L) { return toQVariant(L,-1); }
+inline bool call(const lua_State * const &L_,int inum,int onum=LUA_MULTRET,int errorFunction=0) { return cct::PureLuaCore::call(L_,inum,onum,errorFunction); }
+template<typename ... Args>bool doString(const lua_State * const & L,Args && ... args) { return cct::PureLuaCore::doString(L,std::forward<Args>(args)...); }
+template<typename ... Args>void pushValue(const lua_State * const & L,Args && ... args) {return cct::PureLuaCore::pushValue(L,std::forward<Args>(args)...);}
+template<typename ... Args>void pushKey(const lua_State * const & L,Args && ... args) {return cct::PureLuaCore::pushKey(L,std::forward<Args>(args)...);}
+template<typename ... Args>cct::PureLuaCore::LUAType getGlobal(const lua_State * const & L,Args && ... args) { return cct::PureLuaCore::getGlobal(L,std::forward<Args>(args)...); }
+template<typename ... Args>cct::PureLuaCore::LUAType getTable(const lua_State * const & L,int table,Args && ... args) { return cct::PureLuaCore::getTable(L,table,std::forward<Args>(args)...); }
+template<typename ... Args>void setTable(const lua_State * const & L,Args && ... args) { return cct::PureLuaCore::setTable(L,std::forward<Args>(args)...); }
+template<typename ... Args>void setGlobal(const lua_State * const & L,Args && ... args) { return cct::PureLuaCore::setGlobal(L,std::forward<Args>(args)...); }
+template<typename ... Args>void setTableValue(const lua_State * const & L,Args && ... args) { return cct::PureLuaCore::setTableValue(L,std::forward<Args>(args)...); }
+template<typename ... Args>void setGlobalValue(const lua_State * const & L,Args && ... args) { return cct::PureLuaCore::setGlobalValue(L,std::forward<Args>(args)...); }
+template<typename BeginType,typename EndType,typename ValueType>bool setGlobals(const lua_State * L, BeginType b,EndType e,const ValueType & v,std::string & errorS) {return cct::PureLuaCore::setGlobals(L,b,e,v,errorS);}
+template<typename BeginType,typename EndType,typename ValueType>bool setTables(const lua_State * L,const int table,BeginType b,EndType e,const ValueType & v,std::string & errorS) { return cct::PureLuaCore::setTables(L,t,b,e,v,errorS); }
+template<typename BeginType,typename EndType>cct::PureLuaCore::LUAType getGlobals(const lua_State * L,BeginType b,EndType e ,std::string & errorS) { return cct::PureLuaCore::getGlobals(L,b,e,errorS); }
+template<typename BeginType,typename EndType>cct::PureLuaCore::LUAType getTables(const lua_State * L,const int table,BeginType b,EndType e,std::string & errorS) { return cct::PureLuaCore::getTables(L,table,b,e,errorS); }
+}
+}
 
 #endif
 

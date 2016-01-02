@@ -17,9 +17,14 @@ void PureLuaCore::__PureLuaCore(std::shared_ptr<lua_State> L__,void * d) {
     }
     else {
         auto * L_=luaL_newstate();
+        
         if (L_) {
             luaL_openlibs(L_);
-            dataCore->L=std::shared_ptr<lua_State>(L_,[](lua_State * _L) { lua_close(_L); });
+            lua_add_state_counter(L_);
+            dataCore->L=std::shared_ptr<lua_State>(L_,[](lua_State * _L) {
+                if (lua_sub_state_counter(_L)) { return; }
+                lua_close(_L); 
+            });
         }
     }
 
@@ -43,10 +48,18 @@ void PureLuaCore::setLuaState(std::shared_ptr<lua_State> v) {
 const std::string & PureLuaCore::getError()const {
     return dataCore->lastError;
 }
+std::string & PureLuaCore::getError() {
+    return dataCore->lastError;
+}
 
 /* */
 void PureLuaCore::clearError() {
     dataCore->lastError.clear();
+}
+
+/* */
+void PureLuaCore::rotate(const lua_State * const &L_,const int f,const int n) {
+    lua_rotate(const_cast<lua_State * const &>(L_),f,n);
 }
 
 /* */
@@ -59,15 +72,15 @@ void PureLuaCore::push(int i) { auto * L=dataCore->L.get(); if (L) { push(L,i); 
 
 /* */
 void PureLuaCore::pop(const lua_State * const &L_,int n) { lua_pop(const_cast<lua_State * const &>(L_),n); }
-void PureLuaCore::pop(int n) { auto * L=dataCore->L.get(); if (L) { pop(L,n); } }
+void PureLuaCore::pop(int n) { auto * L=dataCore->L.get(); if (L) {return pop(L,n); }setError("null lua"); }
 
 /* */
 void PureLuaCore::pop(const lua_State * const &L_) { lua_pop(const_cast<lua_State * const &>(L_),1); }
-void PureLuaCore::pop() { auto * L=dataCore->L.get(); if (L) { pop(L); } }
+void PureLuaCore::pop() { auto * L=dataCore->L.get(); if (L) { return pop(L); }setError("null lua"); }
 
 /* */
 void PureLuaCore::newTable(const lua_State * const &L_) { lua_newtable(const_cast<lua_State * const &>(L_)); }
-void PureLuaCore::newTable() { auto * L=dataCore->L.get(); if (L) { newTable(L); } }
+void PureLuaCore::newTable() { auto * L=dataCore->L.get(); if (L) { return newTable(L); }setError("null lua"); }
 
 /* */
 PureLuaCore::LUAType PureLuaCore::type(int i) const {

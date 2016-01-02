@@ -7,6 +7,7 @@
 #define lstate_c
 #define LUA_CORE
 
+#include <mutex>
 #include "lprefix.h"
 
 
@@ -283,6 +284,9 @@ void luaE_freethread (lua_State *L, lua_State *L1) {
   luaM_free(L, l);
 }
 
+namespace { std::recursive_mutex lua_shared_ptr_count_mutex; }
+LUA_API int lua_sub_state_counter(lua_State * L) { std::unique_lock<std::recursive_mutex> __lock(lua_shared_ptr_count_mutex); return --L->shared_ptr_count; }
+LUA_API int lua_add_state_counter(lua_State * L) { std::unique_lock<std::recursive_mutex> __lock(lua_shared_ptr_count_mutex);return ++L->shared_ptr_count; }
 
 LUA_API lua_State *lua_newstate (lua_Alloc f, void *ud) {
   int i;
@@ -293,6 +297,7 @@ LUA_API lua_State *lua_newstate (lua_Alloc f, void *ud) {
   L = &l->l.l;
   g = &l->g;
   L->next = NULL;
+  L->shared_ptr_count=0;
   L->tt = LUA_TTHREAD;
   g->currentwhite = bitmask(WHITE0BIT);
   L->marked = luaC_white(g);

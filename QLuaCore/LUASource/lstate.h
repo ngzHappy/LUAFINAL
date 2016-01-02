@@ -7,6 +7,7 @@
 #ifndef lstate_h
 #define lstate_h
 
+#include <memory>
 #include "lua.h"
 
 #include "lobject.h"
@@ -149,6 +150,7 @@ typedef struct global_State {
 ** 'per thread' state
 */
 struct lua_State {
+public:
   CommonHeader;
   lu_byte status;
   StkId top;  /* first free slot in the stack */
@@ -171,6 +173,7 @@ struct lua_State {
   unsigned short nCcalls;  /* number of nested C calls */
   lu_byte hookmask;
   lu_byte allowhook;
+  int shared_ptr_count;
 };
 
 
