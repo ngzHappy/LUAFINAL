@@ -12,13 +12,17 @@ lua.file = $$PWD/lua/lua.pro
 qlua.file = $$PWD/qlua/qlua.pro
 CCTTest.file = $$PWD/CCTTest/CCTTest.pro
 LUATest.file = $$PWD/LUATest/LUATest.pro
+LUATest1.file = $$PWD/LUATest1/LUATest1.pro
 
 ConFigFileTest.depends += QLuaCore
 lua.depends += QLuaCore
 qlua.depends += QLuaCore
 CCTTest.depends += QLuaCore
+LUATest1.depends += QLuaCore
+LUATest.depends += QLuaCore
 
 SUBDIRS += QLuaCore
+SUBDIRS += LUATest1
 SUBDIRS += LUATest
 SUBDIRS += CCTTest
 SUBDIRS += qlua

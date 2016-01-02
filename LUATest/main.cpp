@@ -107,6 +107,12 @@ int main(int argc, char *argv[])try{
         std::string & errorString = core.getError();
         using namespace cct::lua;
 
+        {
+            setGlobalValue(L,"@.@0001",12);
+            getGlobal(L,"@.@0001");
+            qDebug()<<toQVariant(L);
+        }
+
         auto test1=[](lua_State * ) ->int {
             std::cout<<"Hellow Word!"<<std::endl;
             return 0;
