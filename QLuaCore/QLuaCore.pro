@@ -12,8 +12,8 @@ SOURCES += QLuaCore.cpp
 SOURCES += QLuaCoreDetail.cpp
 SOURCES += PureLuaCore.cpp
 
-HEADERS += $$PWD/QLuaCore.hpp \
-    LUATable.hpp
+HEADERS += $$PWD/QLuaCore.hpp
+HEADERS += $$PWD/LUATable.hpp
 HEADERS += $$PWD/PureLuaCore.hpp
 HEADERS += $$PWD/LUAFunction.hpp
 HEADERS += $$PWD/QLuaCoreDetail.hpp
