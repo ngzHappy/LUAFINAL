@@ -13,7 +13,8 @@ SOURCES += QLuaCore.cpp \
     PureLuaCore.cpp
 
 HEADERS += $$PWD/QLuaCore.hpp \
-    PureLuaCore.hpp
+    PureLuaCore.hpp \
+    LUAFunction.hpp
 HEADERS += $$PWD/QLuaCoreDetail.hpp
 HEADERS += $$PWD/QSTDSharedPointer.hpp
 HEADERS += $$PWD/qluacore_global.hpp

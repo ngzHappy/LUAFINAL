@@ -1,7 +1,9 @@
 ﻿#if !defined(__PURE__LUA__CORE__CCT)
-#define __PURE__LUA__CORE__CCT
+#define __PURE__LUA__CORE__CCT 0x0001
 
 #include <QLuaCore.hpp>
+#include "LUAFunction.hpp"
+
 namespace cct {
 class QLUACORESHARED_EXPORT PureLuaCore {
 public:
@@ -70,6 +72,7 @@ protected:
     static void _n_pushValue(const lua_State * const & L_,const lua_Number);
     static void _f_pushValue(const lua_State * const & L_,lua_CFunction);
     static void _v_pushValue(const lua_State * const & L_,const QVariant &);
+    static void _luaf_pushValue(const lua_State * const & L_,const std::shared_ptr<cct::LuaFunction> & );
 
     static void __setglobal(const lua_State * const & L_,const char * const&);
     static void _v_setglobal(const lua_State * const & L_,const QVariant &);
@@ -134,6 +137,8 @@ private:
         static void pushValue(const lua_State * const & L_,const float value) { _n_pushValue(L_, static_cast<lua_Number>(value) ); }
         static void pushValue(const lua_State * const & L_,const bool value) { _b_pushValue(L_,value); }
         static void pushValue(const lua_State * const & L_,lua_CFunction value) { _f_pushValue(L_,value); }
+        static void pushValue(const lua_State * const & L_,const std::shared_ptr<cct::LuaFunction> &value) { _luaf_pushValue(L_,value); }
+        static void pushValue(const lua_State * const & L_,const cct::spr::LuaFunction &value) { _luaf_pushValue(L_,value); }
         static void pushValue(const lua_State * const & L_,const QVariant &value) { _v_pushValue(L_,value); }
     };
 
@@ -568,6 +573,49 @@ template<typename BeginType,typename EndType>cct::PureLuaCore::LUAType getGlobal
 template<typename BeginType,typename EndType>cct::PureLuaCore::LUAType getTables(const lua_State * L,const int table,BeginType b,EndType e,std::string & errorS) { return cct::PureLuaCore::getTables(L,table,b,e,errorS); }
 }
 }
+
+namespace cct {
+
+template<typename ... Args>
+int LuaFunction::operator()( Args && ... args ) const{
+    auto * L__=L_.get();
+
+    if ((2+sizeof...(args))>max_args_) { return -2; }
+
+    if (L__) {
+        const auto top__=lua_gettop(L__);
+        luaL_newmetatable(L__,__metaTableName());
+        const auto call_pos_=lua_gettop(L__);
+        lua_rawgeti(L__,-1,this_index_);
+        if (lua_isfunction(L__,-1)==false) { return -3; }
+        const auto function_=lua_gettop(L__);
+        // bool temp_[]{ (cct::lua::pushValue(L_,std::forward<Args>(args)),true)... };
+
+        {/*set argc*/
+            cct::lua::pushValue(L__,sizeof...(args));
+            lua_setupvalue(L__,function_,2);
+        }
+
+        {
+            int current_index_=2;
+            auto set_=[L__,&current_index_,function_](const auto & data_) mutable {
+                cct::lua::pushValue(L__,data_);
+                return lua_setupvalue(L__,function_,++current_index_) ;
+            };
+            const char * temp_[]={ set_(args)... }; (void)temp_;
+        }
+
+        lua_copy(L__,function_,call_pos_);
+        lua_settop(L__,call_pos_);
+        return lua_pcall(L__,0,LUA_MULTRET,0);
+    }
+    return -1;
+}
+
+}
+
+Q_DECLARE_METATYPE( std::shared_ptr<cct::LuaFunction> )
+Q_DECLARE_METATYPE( cct::spr::LuaFunction )
 
 #endif
 
