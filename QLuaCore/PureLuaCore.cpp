@@ -17,13 +17,13 @@ void PureLuaCore::__PureLuaCore(std::shared_ptr<lua_State> L__,void * d) {
     }
     else {
         auto * L_=luaL_newstate();
-        
+
         if (L_) {
             luaL_openlibs(L_);
             lua_add_state_counter(L_);
             dataCore->L=std::shared_ptr<lua_State>(L_,[](lua_State * _L) {
                 if (lua_sub_state_counter(_L)) { return; }
-                lua_close(_L); 
+                lua_close(_L);
             });
         }
     }
@@ -142,7 +142,10 @@ QVariant PureLuaCore::toQVariant(const lua_State * const &L_,int n) {
     case PureLuaCore::LUAType::STRING: {
         size_t n_=0; const char * data_=lua_tolstring(L,n,&n_); return QString::fromUtf8(data_,n_);
     }break;
-    case PureLuaCore::LUAType::TABLE:break;
+    case PureLuaCore::LUAType::TABLE: {
+        auto shared_this_lua_ = cct::lua::makeLUAStateSharedPointer(L);
+        return QVariant::fromValue(cct::spr::LUATable(shared_this_lua_,n));
+    }break;
     case PureLuaCore::LUAType::FUNCTION: {
         auto * cFunction_=lua_tocfunction(L,n);
         if (cFunction_) { return QVariant::fromValue(cFunction_);}
@@ -158,7 +161,7 @@ QVariant PureLuaCore::toQVariant(const lua_State * const &L_,int n) {
         size_t n_=0;
         const char * ans_=luaL_tolstring(L,n,&n_);
         if ((n_>0)&&ans_) { return QVariant(QString::fromUtf8(ans_,n_)); }
-    }      
+    }
 
     return QVariant();
 }
@@ -188,7 +191,7 @@ void PureLuaCore::_v_pushKey(const lua_State * const & L_,const QVariant & v) {
             case QVariant::Double:return pushKey(L_, static_cast<lua_Integer>(v.toDouble()) );
             case QVariant::Bool:return pushKey(L_, static_cast<lua_Integer>(v.toBool()) );
         }
-        
+
         if (v.canConvert( qMetaTypeId<QString>() ) ) {return pushKey(L_,v.toString());}
         if (v.canConvert( qMetaTypeId<QByteArray>()) ) { return pushKey(L_,v.toByteArray()); }
         if (v.canConvert( qMetaTypeId<double>()) ) { return pushKey(L_,static_cast<lua_Integer>(v.toDouble())); }
@@ -203,6 +206,15 @@ namespace cct {
 lua_State * PureLuaCore::__state()const { return const_cast<lua_State *>(dataCore->L.get()); }
 }
 namespace cct {
+void PureLuaCore::_luat_pushValue(const lua_State * const & L_,const std::shared_ptr<cct::LUATable> & v) {
+    auto & L=const_cast<lua_State * const &>(L_);
+    if (bool(v)==false) { lua_pushnil(L); return; }
+    if (bool(v.get()->state())==false) {lua_pushnil(L); return; }
+#if defined(_DEBUG)
+    assert( L_ == v.get()->state().get() );
+#endif
+    v->pushTable();
+}
 void PureLuaCore::_luaf_pushValue(const lua_State * const & L_,const std::shared_ptr<cct::LuaFunction> & v) {
     auto & L=const_cast<lua_State * const &>(L_);
     if (bool(v)==false) { lua_pushnil(L); return; }
@@ -222,6 +234,8 @@ void PureLuaCore::_v_pushValue(const lua_State * const & L_,const QVariant & v )
         if (ut==qMetaTypeId<lua_CFunction>()) { return pushValue(L_,v.value<lua_CFunction>()); }
         if (ut==qMetaTypeId<cct::spr::LuaFunction>()) { return pushValue(L_,v.value<cct::spr::LuaFunction>()); }
         if (ut==qMetaTypeId<std::shared_ptr<cct::LuaFunction>>()) { return pushValue(L_,v.value<std::shared_ptr<cct::LuaFunction>>()); }
+        if (ut==qMetaTypeId<cct::spr::LUATable>()) { return pushValue(L_,v.value<cct::spr::LUATable>()); }
+        if (ut==qMetaTypeId<std::shared_ptr<cct::LUATable>>()) { return pushValue(L_,v.value<std::shared_ptr<cct::LUATable>>()); }
         switch (ut) {
             case QVariant::String:return pushValue(L_,v.toString());
             case QVariant::ByteArray:return pushValue(L_,v.toByteArray());
@@ -286,12 +300,12 @@ void PureLuaCore::setTable(const lua_State * const & L_,const int table) {
 
 namespace cct {
 
-bool PureLuaCore::__doString(const lua_State * const & L_,const char * program,size_t ) { 
+bool PureLuaCore::__doString(const lua_State * const & L_,const char * program,size_t ) {
     return __doString(L_,program);
 }
 
-bool PureLuaCore::__doString(const lua_State * const & L_,const char * program) { 
-    auto ans=__loadString(L_,program); 
+bool PureLuaCore::__doString(const lua_State * const & L_,const char * program) {
+    auto ans=__loadString(L_,program);
     if (ans) {ans=__call(L_,0,LUA_MULTRET);}
     return ans;
 }
@@ -492,5 +506,84 @@ LuaFunction::LUAFUNCTIONINFO LuaFunction::luafunctioninfo_;
 }
 
 /*************************************************************************/
+
+namespace {
+namespace cct2 {
+namespace _private {
+class NextNum {
+    std::recursive_mutex mutex;
+    typedef std::unique_lock<std::recursive_mutex> lock_t;
+    std::set<int> unused;
+    std::set<int> used;
+    int max=0;
+    ~NextNum()=default;
+    NextNum():max(10) { for (int i=1; i<max; ++i) { unused.insert(i); } }
+    NextNum(const  NextNum &)=delete;
+    NextNum(NextNum &&)=delete;
+    NextNum&operator=(const  NextNum &)=delete;
+    NextNum&operator=(NextNum &&)=delete;
+public:
+    static NextNum & instance() { static NextNum  * _this=new NextNum; return *_this; }
+    int load() {
+        lock_t _(mutex);
+        if (unused.empty()==false) {
+            auto ansp=unused.begin();
+            auto ans=*ansp; unused.erase(ansp);
+            used.insert(ans); return ans;
+        }
+        used.insert(max); return max++;
+    }
+    void store(int i) {
+        lock_t _(mutex);
+        used.erase(i);
+        unused.insert(i);
+    }
+};
+}
+}
+}
+
+namespace cct {
+LUATable::~LUATable() {
+    auto L=L__.get();
+    if (L) {
+        const auto top__=lua_gettop(L);
+        luaL_newmetatable(L,__metaTableName());
+        lua_pushnil(L);
+        lua_rawseti(L,-2,this_index_);
+        lua_settop(L,top__);
+        cct2::_private::NextNum::instance().store(this_index_);
+    }
+}
+
+void LUATable::pushTable()const {
+    auto L=L__.get();
+    if (L) {
+        luaL_newmetatable(L,__metaTableName());
+        const auto metaTable=lua_gettop(L);
+        lua_rawgeti(L,metaTable,this_index_);
+        lua_copy(L,-1,metaTable);
+        lua_settop(L,metaTable);
+    }
+}
+
+LUATable::LUATable(std::shared_ptr<lua_State> L_,int table_in_lua_state_):L__(std::move(L_)) {
+    auto L=L__.get();
+    if (L) {
+        const auto top__=lua_gettop(L);
+        table_in_lua_state_=lua_absindex(L,table_in_lua_state_);
+        this_index_=cct2::_private::NextNum::instance().load();
+        luaL_newmetatable(L,__metaTableName());
+        const auto metaTable=lua_gettop(L);
+        lua_pushvalue(L,table_in_lua_state_);
+        lua_rawseti(L,metaTable,this_index_);
+        lua_settop(L,top__);
+    }
+}
+}
+
+/*************************************************************************/
+
+
 
 

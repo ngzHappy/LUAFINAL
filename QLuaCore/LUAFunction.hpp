@@ -28,6 +28,7 @@ public:
     template<typename ... Args>int operator()(Args && ... args) const;
 
 };
+typedef LuaFunction LUAFunction;
 
 namespace spr {
 class QLUACORESHARED_EXPORT LuaFunction :
@@ -61,6 +62,7 @@ public:
 
     void pushFunction()const { return (this->__get()).pushFunction(); }
 };
+typedef LuaFunction LUAFunction;
 }
 }
 

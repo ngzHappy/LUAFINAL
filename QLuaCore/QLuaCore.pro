@@ -8,13 +8,14 @@ TEMPLATE = lib
 
 DEFINES += QLUACORE_LIBRARY
 
-SOURCES += QLuaCore.cpp \
-    QLuaCoreDetail.cpp \
-    PureLuaCore.cpp
+SOURCES += QLuaCore.cpp
+SOURCES += QLuaCoreDetail.cpp
+SOURCES += PureLuaCore.cpp
 
 HEADERS += $$PWD/QLuaCore.hpp \
-    PureLuaCore.hpp \
-    LUAFunction.hpp
+    LUATable.hpp
+HEADERS += $$PWD/PureLuaCore.hpp
+HEADERS += $$PWD/LUAFunction.hpp
 HEADERS += $$PWD/QLuaCoreDetail.hpp
 HEADERS += $$PWD/QSTDSharedPointer.hpp
 HEADERS += $$PWD/qluacore_global.hpp

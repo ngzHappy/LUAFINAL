@@ -3,6 +3,7 @@
 
 #include <QLuaCore.hpp>
 #include "LUAFunction.hpp"
+#include "LUATable.hpp"
 
 namespace cct {
 class QLUACORESHARED_EXPORT PureLuaCore {
@@ -73,6 +74,7 @@ protected:
     static void _f_pushValue(const lua_State * const & L_,lua_CFunction);
     static void _v_pushValue(const lua_State * const & L_,const QVariant &);
     static void _luaf_pushValue(const lua_State * const & L_,const std::shared_ptr<cct::LuaFunction> & );
+    static void _luat_pushValue(const lua_State * const & L_,const std::shared_ptr<cct::LUATable> &);
 
     static void __setglobal(const lua_State * const & L_,const char * const&);
     static void _v_setglobal(const lua_State * const & L_,const QVariant &);
@@ -139,6 +141,8 @@ private:
         static void pushValue(const lua_State * const & L_,lua_CFunction value) { _f_pushValue(L_,value); }
         static void pushValue(const lua_State * const & L_,const std::shared_ptr<cct::LuaFunction> &value) { _luaf_pushValue(L_,value); }
         static void pushValue(const lua_State * const & L_,const cct::spr::LuaFunction &value) { _luaf_pushValue(L_,value); }
+        static void pushValue(const lua_State * const & L_,const cct::spr::LUATable &value) { _luat_pushValue(L_,value); }
+        static void pushValue(const lua_State * const & L_,const std::shared_ptr<cct::LUATable> &value) { _luat_pushValue(L_,value); }
         static void pushValue(const lua_State * const & L_,const QVariant &value) { _v_pushValue(L_,value); }
     };
 
@@ -616,6 +620,8 @@ int LuaFunction::operator()( Args && ... args ) const{
 
 Q_DECLARE_METATYPE( std::shared_ptr<cct::LuaFunction> )
 Q_DECLARE_METATYPE( cct::spr::LuaFunction )
+Q_DECLARE_METATYPE( cct::spr::LUATable )
+Q_DECLARE_METATYPE( std::shared_ptr<cct::LUATable> )
 
 #endif
 
